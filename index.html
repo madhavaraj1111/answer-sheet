@@ -1,0 +1,2677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Answer Sheet — Topic Test</title>
+<style>
+  :root{
+    --paper: #FFF78D;
+    --paper-line: #F5EC74;
+    --card: #FFFDF2;
+    --ink: #1B2A44;
+    --ink-soft: #4B5872;
+    --rule: #E3D785;
+    --stamp: #A63D2F;
+    --stamp-soft: #E3C9C4;
+    --gold: #9C7A2E;
+    --green: #3F6B4E;
+    --green-soft: #D6E3D9;
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(
+        var(--paper),
+        var(--paper) 27px,
+        var(--paper-line) 28px
+      );
+    color:var(--ink);
+    font-family: "Iowan Old Style","Palatino Linotype",Georgia,serif;
+    min-height:100vh;
+  }
+  .wrap{ max-width:720px; margin:0 auto; padding:28px 20px 90px; }
+
+  header.sheet-head{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:10px; margin-bottom:18px;
+  }
+  header.sheet-head .title{
+    font-size:1.5rem; font-weight:700; letter-spacing:0.5px;
+  }
+  header.sheet-head .sub{
+    font-family:"Courier New",monospace; font-size:0.72rem; color:var(--ink-soft);
+    text-align:right; line-height:1.5;
+  }
+
+  nav.tabs{
+    display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  nav.tabs button{
+    font-family:"Courier New",monospace; font-size:0.75rem; letter-spacing:0.5px;
+    text-transform:uppercase;
+    background:none; border:1px solid var(--ink); color:var(--ink);
+    padding:7px 14px; border-radius:var(--radius); cursor:pointer;
+  }
+  nav.tabs button.active{ background:var(--ink); color:var(--paper); }
+  nav.tabs button:hover{ opacity:0.85; }
+  nav.tabs button:disabled{ opacity:0.4; cursor:not-allowed; }
+  nav.tabs button:disabled:hover{ opacity:0.4; }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  .card{
+    background:var(--card); border:1px solid var(--rule);
+    border-radius:var(--radius); padding:20px; margin-bottom:16px;
+    box-shadow: 0 1px 0 rgba(27,42,68,0.05);
+  }
+  .card h2{ margin:0 0 10px; font-size:1.05rem; }
+  .muted{ color:var(--ink-soft); font-size:0.88rem; }
+
+  button.primary{
+    font-family:"Courier New",monospace; text-transform:uppercase; letter-spacing:0.5px;
+    background:var(--ink); color:var(--paper); border:none;
+    padding:11px 20px; border-radius:var(--radius); cursor:pointer; font-size:0.82rem;
+  }
+  button.primary:hover{ background:#0f1a2e; }
+  button.primary:disabled{ background:#8a91a0; cursor:not-allowed; }
+  button.secondary{
+    font-family:"Courier New",monospace; text-transform:uppercase; letter-spacing:0.5px;
+    background:none; color:var(--ink); border:1px solid var(--ink);
+    padding:9px 16px; border-radius:var(--radius); cursor:pointer; font-size:0.78rem;
+  }
+  button.secondary:disabled{ opacity:0.45; cursor:not-allowed; }
+  button.danger{ border-color:var(--stamp); color:var(--stamp); }
+
+  /* Completed-screen action buttons: distinct professional colors by intent */
+  button.btn-retest{ border-color:var(--ink); color:var(--ink); }
+  button.btn-retest:hover{ background:rgba(27,42,68,0.06); }
+  button.btn-wrong{ border-color:var(--stamp); color:var(--stamp); }
+  button.btn-wrong:hover{ background:var(--stamp-soft); }
+  button.btn-skipped{ border-color:var(--gold); color:var(--gold); }
+  button.btn-skipped:hover{ background:rgba(156,122,46,0.12); }
+  button.btn-menu{ border-color:var(--ink-soft); color:var(--ink-soft); }
+  button.btn-menu:hover{ background:rgba(75,88,114,0.08); }
+
+  textarea, input[type=text], input[type=number], select{
+    width:100%; font-family:"Courier New",monospace; font-size:0.85rem;
+    border:1px solid var(--rule); border-radius:var(--radius); padding:9px;
+    background:#fff; color:var(--ink);
+  }
+  textarea{ min-height:160px; resize:vertical; }
+  label{ display:block; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--ink-soft); margin:12px 0 5px; font-family:"Courier New",monospace; }
+
+  .field-error{
+    color:var(--stamp); font-family:"Courier New",monospace; font-size:0.72rem;
+    margin-top:5px; min-height:1px;
+  }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .stat-box{ text-align:center; border:1px solid var(--rule); border-radius:var(--radius); padding:12px 6px; background:#fff;}
+  .stat-box .num{ font-family:"Courier New",monospace; font-size:1.3rem; font-weight:700; }
+  .stat-box .lbl{ font-size:0.66rem; text-transform:uppercase; color:var(--ink-soft); letter-spacing:0.4px; }
+
+  .cat-row{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--rule); font-size:0.85rem; gap:10px; }
+  .cat-row:last-child{ border-bottom:none; }
+  .cat-row span:first-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cat-row span:last-child{ flex-shrink:0; font-family:"Courier New",monospace; font-size:0.78rem; color:var(--ink-soft); }
+
+  .cat-head{ display:flex; align-items:center; font-family:"Courier New",monospace; font-size:0.66rem;
+    text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); padding:0 0 8px; border-bottom:1px solid var(--rule); gap:10px; }
+  .cat-head .colname{ flex:1; }
+  .cat-head .colnum{ width:74px; text-align:center; flex-shrink:0; }
+  .cat-row3{ display:flex; align-items:center; padding:7px 0; border-bottom:1px dashed var(--rule); font-size:0.85rem; gap:10px; }
+  .cat-row3:last-child{ border-bottom:none; }
+  .cat-row3 .colname{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cat-row3 .colnum{ width:74px; text-align:center; flex-shrink:0; font-family:"Courier New",monospace; font-size:0.78rem; color:var(--ink-soft); }
+  .cat-row3 .colnum.improve{ color:var(--stamp); }
+
+  .hist-head{ display:flex; align-items:center; font-family:"Courier New",monospace; font-size:0.66rem;
+    text-transform:uppercase; letter-spacing:0.4px; color:var(--ink-soft); padding:0 0 8px; border-bottom:1px solid var(--rule); gap:10px; }
+  .hist-head .col-date{ width:76px; flex-shrink:0; }
+  .hist-head .col-mode{ width:104px; flex-shrink:0; }
+  .hist-head .col-scope{ flex:1; min-width:0; }
+  .hist-head .col-score{ width:96px; flex-shrink:0; text-align:left; }
+  .hist-row{ display:flex; align-items:center; padding:7px 0; border-bottom:1px dashed var(--rule); gap:10px; }
+  .hist-row:last-child{ border-bottom:none; }
+  .hist-row .col-date{ width:76px; flex-shrink:0; font-family:"Courier New",monospace; font-size:0.72rem; color:var(--ink-soft); }
+  .hist-row .col-mode{ width:104px; flex-shrink:0; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hist-row .col-scope{ flex:1; min-width:0; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hist-row .col-score{ width:96px; flex-shrink:0; text-align:left; font-family:"Courier New",monospace; font-size:0.78rem;
+    color:var(--ink-soft); white-space:nowrap; }
+  .hist-row .col-score .pct{ color:var(--ink); font-weight:700; }
+  .hist-row .col-score .frac{ color:var(--ink-soft); font-size:0.72rem; }
+  @media (max-width:520px){
+    .hist-head .col-mode, .hist-row .col-mode{ display:none; }
+  }
+
+  /* Question / OMR styling */
+  .q-meta{ font-family:"Courier New",monospace; font-size:0.72rem; color:var(--ink-soft); margin-bottom:6px; }
+  .q-text{ font-size:1.05rem; line-height:1.5; margin-bottom:18px; }
+  .omr-row{
+    display:flex; align-items:center; gap:12px;
+    padding:9px 10px; border-radius:var(--radius); cursor:pointer;
+    border:1px solid transparent; margin-bottom:6px;
+  }
+  .omr-row:hover{ background:rgba(27,42,68,0.04); }
+  .bubble{
+    width:13px; height:13px; border-radius:50%; border:2px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; background:#fff; padding:0;
+  }
+  .bubble .dot{
+    width:6px; height:6px; border-radius:50%; background:transparent;
+  }
+  .omr-row.selected .bubble .dot{ background:var(--ink); }
+  .omr-row .opt-text{ font-size:0.95rem; }
+  .omr-row.correct .bubble{ border-color:var(--green); }
+  .omr-row.correct .bubble .dot{ background:var(--green); }
+  .omr-row.correct{ background:var(--green-soft); }
+  .omr-row.wrong .bubble{ border-color:var(--stamp); }
+  .omr-row.wrong .bubble .dot{ background:var(--stamp); }
+  .omr-row.wrong{ background:var(--stamp-soft); }
+  .omr-row.disabled{ cursor:default; }
+
+  .progress-bar{ height:5px; background:var(--rule); border-radius:3px; overflow:hidden; margin-bottom:16px; }
+  .progress-bar .fill{ height:100%; background:var(--ink); transition:width 0.3s; }
+
+  .feedback{ font-family:"Courier New",monospace; font-size:0.85rem; margin-top:12px; padding:10px 12px; border-radius:var(--radius); font-weight:700; letter-spacing:0.2px; }
+  .feedback.correct{ color:var(--green); background:var(--green-soft); }
+  .feedback.wrong{ color:var(--stamp); background:var(--stamp-soft); }
+
+  .import-result{ font-family:"Courier New",monospace; font-size:0.82rem; margin-top:10px; padding:10px; border-radius:var(--radius); }
+  .import-result.ok{ background:var(--green-soft); color:var(--green); }
+  .import-result.err{ background:var(--stamp-soft); color:var(--stamp); }
+
+  .stamp-seal{
+    display:inline-block; border:2px solid var(--gold); color:var(--gold);
+    border-radius:50%; width:64px; height:64px; text-align:center;
+    font-family:"Courier New",monospace; font-size:0.62rem; line-height:1.1;
+    padding-top:14px; transform:rotate(-8deg); margin-bottom:8px;
+  }
+  .empty{ text-align:center; padding:30px 10px; color:var(--ink-soft); }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+  /* Manage tab */
+  .manage-item{ margin-bottom:10px; }
+  .manage-item .q-text-preview{ font-size:0.95rem; line-height:1.45; margin-bottom:10px; }
+  .editForm{ display:none; margin-top:14px; border-top:1px dashed var(--rule); padding-top:14px; }
+  .col2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .col2{ grid-template-columns:1fr; } }
+
+  /* Floating action menu: single "+" button expands into Add/Manage/Register/Settings */
+  .fab-wrap{
+    position:fixed; right:20px; bottom:24px; z-index:60;
+    display:flex; flex-direction:column; align-items:flex-end;
+  }
+  .fab-menu{
+    display:flex; flex-direction:column; align-items:flex-end; gap:12px; margin-bottom:14px;
+    opacity:0; transform:translateY(10px); pointer-events:none;
+    transition:opacity .16s ease, transform .16s ease;
+  }
+  .fab-menu.open{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .fab-item{
+    display:flex; align-items:center; gap:10px; background:var(--ink); color:var(--paper);
+    border:2px solid var(--paper); border-radius:24px; padding:10px 18px; margin:0;
+    cursor:pointer; user-select:none; white-space:nowrap;
+    font-family:"Courier New",monospace; font-size:0.72rem; font-weight:700; letter-spacing:0.6px;
+    text-transform:uppercase; box-shadow:0 3px 10px rgba(27,42,68,0.4);
+  }
+  .fab-item:hover{ background:#0f1a2e; }
+  .fab-item.active{ background:var(--gold); border-color:var(--gold); }
+  .fab-item .fab-item-icon{ font-size:0.95rem; line-height:1; }
+  .fab-item .fab-item-icon-plus{ font-size:1.1rem; font-weight:700; }
+  .fab{
+    width:56px; height:56px; border-radius:50%; background:var(--ink); color:var(--paper); border:none;
+    display:flex; align-items:center; justify-content:center; font-size:1.8rem; line-height:1;
+    cursor:pointer; user-select:none; box-shadow:0 3px 10px rgba(27,42,68,0.4);
+    transition:transform .2s ease, background .15s ease;
+  }
+  .fab:hover{ background:#0f1a2e; }
+  .fab-wrap.open .fab{ transform:rotate(45deg); background:#0f1a2e; }
+
+  /* Add-questions modal */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(27,42,68,0.55);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:40px 16px; overflow-y:auto; z-index:100;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-card{
+    background:var(--paper); max-width:640px; width:100%;
+    border-radius:6px; padding:8px 4px 24px; position:relative; margin-bottom:40px;
+  }
+  .modal-card > h2.modal-title{ padding:14px 44px 0 16px; margin:0 0 6px; font-size:1.2rem; }
+  .modal-close{
+    position:absolute; top:10px; right:10px; background:none; border:none;
+    font-size:1.5rem; cursor:pointer; color:var(--ink); line-height:1; padding:6px;
+  }
+  .modal-card .card{ margin:0 12px 16px; }
+
+  /* Revision-due reminder popup: a small dismissible toast, not a full-screen modal */
+  .revision-toast{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    z-index:250; max-width:380px; width:calc(100% - 32px);
+    background:var(--card); border:1px solid var(--stamp); border-radius:var(--radius);
+    box-shadow:0 8px 24px rgba(0,0,0,0.28);
+    padding:14px 36px 14px 14px; display:none; gap:10px; align-items:flex-start;
+    animation: revisionToastIn 0.22s ease;
+  }
+  @keyframes revisionToastIn{ from{ opacity:0; transform:translate(-50%,-12px); } to{ opacity:1; transform:translate(-50%,0); } }
+  .revision-toast-icon{ font-size:1.35rem; line-height:1.1; flex-shrink:0; }
+  .revision-toast-title{ font-weight:700; color:var(--stamp); margin-bottom:4px; font-size:0.95rem; }
+  .revision-toast-msg{ margin:0 0 10px; font-size:0.83rem; color:var(--ink-soft); line-height:1.4; }
+  .revision-toast-btn{ padding:7px 14px; font-size:0.78rem; }
+  .revision-toast-close{
+    position:absolute; top:6px; right:6px; background:none; border:none;
+    font-size:1.2rem; line-height:1; color:var(--ink-soft); cursor:pointer; padding:6px;
+  }
+  .revision-toast-close:hover{ color:var(--ink); }
+
+  /* ---------- Study Book: deliberately distinct from the exam-sheet look ---------- */
+  :root{
+    --book-page: #FFFFFF;
+    --book-page-edge: #ECECEC;
+    --book-ink: #362A1E;
+    --book-ink-soft: #7A6A52;
+    --book-rule: #D8C79E;
+    --book-gold: #9C6B2E;
+    --book-shadow: rgba(30,30,30,0.16);
+    --book-highlight: #FFE87A;
+  }
+  .book-shell{ max-width:650px; margin:0 auto; animation: bookFadeIn 0.25s ease; }
+  @keyframes bookFadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .book-topbar{
+    display:flex; justify-content:space-between; align-items:center; gap:15px;
+    margin-bottom:15px; font-family:"Courier New",monospace; font-size:1.03rem;
+    color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.4px;
+  }
+  .book-jump{
+    font-family:"Courier New",monospace; font-size:1.03rem; padding:8px 12px;
+    border:1px solid var(--rule); border-radius:var(--radius); background:#fff; width:auto;
+  }
+  .book-page-wrap{ position:relative; }
+  .book-page-card{
+    background:var(--book-page);
+    border:1px solid var(--book-page-edge);
+    border-radius:2px;
+    padding:52px 46px 43px;
+    box-shadow:
+      0 1px 0 #fff inset,
+      7px 7px 0 var(--book-page-edge),
+      7px 7px 17px var(--book-shadow);
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    color:var(--book-ink);
+  }
+  .book-qnum{
+    font-family:"Courier New",monospace; font-size:1.01rem; letter-spacing:0.8px;
+    color:var(--book-gold); text-transform:uppercase; margin-bottom:15px;
+  }
+  .book-question{
+    font-size:1.84rem; line-height:1.5; font-weight:600; margin-bottom:29px;
+  }
+  .book-rule{
+    border-top:1px dashed var(--book-rule); margin:0 0 29px;
+  }
+  .book-answer-label{
+    font-family:"Courier New",monospace; font-size:0.98rem; letter-spacing:1.1px;
+    text-transform:uppercase; color:var(--book-ink-soft); margin-bottom:11px;
+  }
+  .book-answer-wrap{ text-align:center; margin-bottom:29px; }
+  .book-answer{
+    font-size:1.55rem; line-height:1.7; color:var(--book-highlight);
+    display:inline; background:rgba(0,0,0,0.8);
+    padding:4px 9px; border-radius:4px;
+    box-decoration-break:clone; -webkit-box-decoration-break:clone;
+  }
+  .book-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:26px; gap:15px;
+  }
+  .book-pagenum{
+    font-family:"Courier New",monospace; font-size:1.07rem; color:var(--ink-soft);
+  }
+  .book-mnemonic-fab{
+    position:absolute; top:26px; right:-26px; width:58px; height:58px; border-radius:50%;
+    background:var(--book-gold); color:#fff; border:2px solid #fff; box-shadow:0 2px 6px var(--book-shadow);
+    display:flex; align-items:center; justify-content:center; font-size:1.63rem; cursor:pointer; padding:0;
+  }
+  .book-mnemonic-box{
+    margin-top:29px; background:#FFF9E8; border:1px dashed var(--book-gold); border-radius:6px; padding:20px 23px;
+  }
+  .book-mnemonic-head{ display:flex; align-items:center; justify-content:space-between; position:relative; }
+  .book-mnemonic-text{
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif; font-size:1.5rem; line-height:1.5; color:var(--book-ink);
+  }
+  .book-mnemonic-dots{
+    background:none; border:none; cursor:pointer; font-size:1.92rem; color:var(--book-ink-soft); padding:3px 10px; line-height:1;
+  }
+  .book-mnemonic-menu-wrap{ position:relative; }
+  .book-mnemonic-menu{
+    position:absolute; right:0; top:100%; background:#fff; border:1px solid var(--book-page-edge);
+    border-radius:6px; box-shadow:0 4px 10px var(--book-shadow); z-index:5; overflow:hidden; min-width:52px;
+  }
+  .book-mnemonic-menu button{
+    display:flex; align-items:center; justify-content:center; width:100%; padding:12px 14px;
+    background:none; border:none; font-size:1.25rem; cursor:pointer; color:var(--book-ink);
+  }
+  .book-mnemonic-menu button:hover{ background:#F5F0E4; }
+  .book-mnemonic-menu button.mnemonic-delete-icon{ color:var(--stamp); }
+  .book-mnemonic-edit{ margin-top:29px; }
+  .book-mnemonic-textarea{
+    width:100%; min-height:123px; font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    font-size:1.5rem; padding:15px 20px; border:1px solid var(--book-page-edge); border-radius:6px;
+    resize:vertical; box-sizing:border-box; color:var(--book-ink);
+  }
+  .book-topbar-actions{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+  .book-flag-btn{
+    font-family:"Courier New",monospace; font-size:1.15rem; line-height:1;
+    background:#fff; border:1px solid var(--stamp); color:var(--stamp);
+    border-radius:var(--radius); padding:7px 11px; cursor:pointer;
+  }
+  .book-flag-btn:hover{ background:var(--stamp-soft); }
+  .book-flag-btn.flagged{ background:var(--stamp); color:#fff; }
+  .book-review-check-row{
+    display:flex; align-items:center; gap:8px; margin:12px 0 0; cursor:pointer;
+    font-size:0.85rem; color:var(--ink-soft); text-transform:none; letter-spacing:normal;
+    font-family:inherit;
+  }
+  .book-review-check-row input{ width:auto; margin:0; }
+  .book-review-check-row input:disabled + span{ opacity:0.6; }
+
+  /* ---------- Dark mode ---------- */
+  .theme-toggle{
+    background:none; border:1px solid var(--ink); color:var(--ink);
+    border-radius:50%; width:34px; height:34px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem; cursor:pointer; margin-left:10px; padding:0;
+  }
+  .theme-toggle:hover{ opacity:0.8; }
+
+  body.dark-mode{
+    --paper: #0a1220;
+    --paper-line: #101c30;
+    --card: #12203a;
+    --ink: #e8edf7;
+    --ink-soft: #93a3c2;
+    --rule: #24334f;
+    --stamp: #ff8069;
+    --stamp-soft: #33212c;
+    --gold: #e3ba6e;
+    --green: #7ee0a8;
+    --green-soft: #12291f;
+
+    --book-page: #12203a;
+    --book-page-edge: #24334f;
+    --book-ink: #e9e2d3;
+    --book-ink-soft: #b3a68b;
+    --book-rule: #4a4030;
+    --book-gold: #e3ba6e;
+    --book-shadow: rgba(0,0,0,0.6);
+    --book-highlight: #ffe87a;
+  }
+  body.dark-mode textarea,
+  body.dark-mode input[type=text],
+  body.dark-mode input[type=number],
+  body.dark-mode select{
+    background:#12203a; color:var(--ink); border-color:var(--rule);
+  }
+  body.dark-mode .stat-box{ background:#12203a; }
+  body.dark-mode .bubble{ background:#12203a; }
+  body.dark-mode .book-jump{ background:#12203a; }
+  body.dark-mode .book-page-card{
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.05) inset,
+      7px 7px 0 var(--book-page-edge),
+      7px 7px 17px var(--book-shadow);
+  }
+  body.dark-mode .book-mnemonic-fab{ color:var(--paper); }
+  body.dark-mode .book-flag-btn{ background:#12203a; }
+  body.dark-mode .book-flag-btn.flagged{ background:var(--stamp); color:var(--paper); }
+  body.dark-mode .book-mnemonic-box{ background:#1b2c26; }
+  body.dark-mode .book-mnemonic-menu{ background:#12203a; border-color:var(--book-page-edge); }
+  body.dark-mode .book-mnemonic-menu button:hover{ background:#1a2c4a; }
+  body.dark-mode .omr-row:hover{ background:rgba(237,237,237,0.06); }
+  body.dark-mode button.btn-retest:hover{ background:rgba(237,237,237,0.08); }
+  body.dark-mode .field-error{ color:#ff8a7a; }
+  /* These hovers were hardcoded to a dark navy for the light theme, which made text
+     unreadable in dark mode since button.primary/.fab/.fab-item text stays var(--paper)
+     (also dark in dark mode). Use a light hover tint instead so text stays readable. */
+  body.dark-mode button.primary:hover{ background:#d8d8d8; }
+  body.dark-mode .fab:hover{ background:#d8d8d8; }
+  body.dark-mode .fab-wrap.open .fab{ background:#d8d8d8; }
+  body.dark-mode .fab-item:hover{ background:#d8d8d8; }
+  body.dark-mode button.btn-skipped:hover{ background:rgba(217,173,92,0.15); }
+  body.dark-mode button.btn-menu:hover{ background:rgba(168,168,168,0.12); }
+  body.dark-mode button.learn-btn:hover{ background:rgba(168,168,168,0.12); }
+
+  /* ---------- Revision pipeline (3-7-21) ---------- */
+  .rev-badge{
+    display:inline-block; font-family:"Courier New",monospace; font-size:0.66rem;
+    text-transform:uppercase; letter-spacing:0.4px; padding:3px 8px; border-radius:10px;
+    border:1px solid var(--rule); color:var(--ink-soft); white-space:nowrap;
+  }
+  .rev-badge.due{ border-color:var(--stamp); color:var(--stamp); background:var(--stamp-soft); }
+  .rev-badge.stage1{ border-color:var(--gold); color:var(--gold); }
+  .rev-badge.stage2{ border-color:var(--gold); color:var(--gold); }
+  .rev-badge.stage3{ border-color:var(--gold); color:var(--gold); }
+  .rev-badge.stage4{ border-color:var(--green); color:var(--green); }
+  .rev-badge.mistake{ border-color:var(--stamp); color:var(--stamp); }
+  button.learn-btn{
+    font-family:"Courier New",monospace; font-size:0.72rem; letter-spacing:0.4px;
+    background:#fff; border:1px solid var(--ink-soft); color:var(--ink-soft);
+    border-radius:var(--radius); padding:7px 11px; cursor:pointer; white-space:nowrap;
+  }
+  button.learn-btn:hover{ background:rgba(75,88,114,0.08); }
+  button.learn-btn.on{ background:var(--green); border-color:var(--green); color:#fff; }
+  body.dark-mode button.learn-btn{ background:#12203a; }
+  body.dark-mode button.learn-btn.on{ color:var(--paper); }
+
+  /* ============================================================
+     MOBILE RESPONSIVE — tuned for narrow phones (e.g. Vivo Y15:
+     ~360-375 CSS px wide viewport, 720x1544 physical, 20:9-ish).
+     Applies progressively tighter spacing/sizing as width shrinks.
+     ============================================================ */
+  @media (max-width:480px){
+    .wrap{ padding:16px 12px 100px; }
+    header.sheet-head .title{ font-size:1.22rem; }
+    header.sheet-head .sub{ font-size:0.64rem; }
+    nav.tabs{ gap:5px; margin-bottom:14px; }
+    nav.tabs button{ font-size:0.66rem; padding:7px 9px; flex:1 1 auto; text-align:center; }
+    .card{ padding:14px; margin-bottom:12px; }
+    .card h2{ font-size:0.95rem; }
+    .stat-grid{ grid-template-columns:repeat(2,1fr); gap:8px; }
+    .stat-box{ padding:10px 4px; }
+    .stat-box .num{ font-size:1.08rem; }
+    .stat-box .lbl{ font-size:0.6rem; }
+    button.primary{ padding:11px 14px; font-size:0.78rem; width:100%; }
+    button.secondary{ padding:9px 12px; font-size:0.74rem; }
+    .row{ gap:8px; }
+    .row button.secondary{ flex:1 1 auto; }
+    .q-text{ font-size:0.98rem; margin-bottom:14px; }
+    .omr-row{ padding:9px 8px; gap:9px; }
+    .omr-row .opt-text{ font-size:0.9rem; }
+
+    /* Study Book page: the big serif page is the least mobile-friendly
+       part of the app by default — shrink its padding/type substantially. */
+    .book-page-card{ padding:26px 18px 22px; box-shadow:0 1px 0 #fff inset, 4px 4px 0 var(--book-page-edge), 4px 4px 12px var(--book-shadow); }
+    .book-question{ font-size:1.28rem; margin-bottom:18px; }
+    .book-answer{ font-size:1.15rem; }
+    .book-topbar{ font-size:0.85rem; gap:8px; }
+    .book-jump{ font-size:0.85rem; padding:6px 8px; }
+    .book-mnemonic-fab{ right:-14px; width:46px; height:46px; font-size:1.3rem; top:16px; }
+    .book-mnemonic-text{ font-size:1.15rem; }
+    .book-mnemonic-textarea{ font-size:1.15rem; min-height:100px; padding:12px 14px; }
+    .book-nav{ margin-top:18px; }
+    .book-pagenum{ font-size:0.9rem; }
+    .book-topbar-actions{ gap:6px; }
+    .learn-btn, .book-flag-btn{ padding:6px 8px; font-size:0.95rem; }
+
+    /* Modals: fill the viewport edge-to-edge instead of floating with big margins */
+    .modal-overlay{ padding:14px 8px; }
+    .modal-card{ padding:6px 2px 18px; }
+    .modal-card > h2.modal-title{ font-size:1.05rem; padding:12px 36px 0 12px; }
+    .modal-card .card{ margin:0 8px 12px; padding:14px; }
+
+    .revision-toast{ top:10px; max-width:none; width:calc(100% - 16px); padding:12px 32px 12px 12px; }
+
+    /* FAB: pull in from the edge a touch and shrink the menu labels */
+    .fab-wrap{ right:14px; bottom:16px; }
+    .fab{ width:50px; height:50px; font-size:1.6rem; }
+    .fab-item{ font-size:0.66rem; padding:9px 14px; }
+
+    .cat-row3 .colnum, .cat-head .colnum{ width:56px; }
+    .hist-row .col-scope, .hist-head .col-scope{ font-size:0.76rem; }
+  }
+  @media (max-width:380px){
+    /* Vivo Y15-class width: squeeze the tab bar onto one line and
+       drop non-essential label chrome further. */
+    nav.tabs button{ font-size:0.6rem; padding:6px 4px; letter-spacing:0.2px; }
+    header.sheet-head .sub{ font-size:0.6rem; }
+    .stat-box .num{ font-size:0.98rem; }
+    .book-question{ font-size:1.16rem; }
+    .rev-badge{ font-size:0.6rem; padding:2px 6px; }
+  }
+</style>
+<meta name="theme-color" content="#FFF78D">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Answer Sheet">
+<script>
+/* Installable-app setup: icon + manifest are generated here so everything stays in this one file */
+(function(){
+  try{
+    function drawIcon(size){
+      var c=document.createElement('canvas'); c.width=c.height=size;
+      var g=c.getContext('2d'), u=size/512;
+      g.fillStyle='#FFF78D'; g.fillRect(0,0,size,size);
+      g.strokeStyle='#F5EC74'; g.lineWidth=2*u;
+      for(var y=28*u;y<size;y+=28*u){g.beginPath();g.moveTo(0,y);g.lineTo(size,y);g.stroke();}
+      g.fillStyle='#FFFDF2'; g.strokeStyle='#1B2A44'; g.lineWidth=14*u;
+      g.beginPath(); g.arc(256*u,256*u,150*u,0,Math.PI*2); g.fill(); g.stroke();
+      g.strokeStyle='#3F6B4E'; g.lineWidth=34*u; g.lineCap='round'; g.lineJoin='round';
+      g.beginPath(); g.moveTo(190*u,262*u); g.lineTo(240*u,312*u); g.lineTo(334*u,200*u); g.stroke();
+      return c.toDataURL('image/png');
+    }
+    var i192=drawIcon(192), i512=drawIcon(512);
+    var l=document.createElement('link'); l.rel='icon'; l.href=i192; document.head.appendChild(l);
+    var a=document.createElement('link'); a.rel='apple-touch-icon'; a.href=drawIcon(180); document.head.appendChild(a);
+    if(location.protocol==='http:'||location.protocol==='https:'){
+      var start=location.origin+location.pathname;
+      var m={name:'The Answer Sheet',short_name:'Answer Sheet',description:'Topic tests and revision for exam prep',
+        start_url:start,scope:location.origin+location.pathname.replace(/[^\/]*$/,''),id:start,display:'standalone',orientation:'portrait',
+        background_color:'#FFF78D',theme_color:'#FFF78D',
+        icons:[{src:i192,sizes:'192x192',type:'image/png',purpose:'any'},
+               {src:i512,sizes:'512x512',type:'image/png',purpose:'any'},
+               {src:i512,sizes:'512x512',type:'image/png',purpose:'maskable'}]};
+      var ml=document.createElement('link'); ml.rel='manifest';
+      ml.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));
+      document.head.appendChild(ml);
+    }
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="sheet-head">
+    <div class="title">The Answer Sheet</div>
+    <div style="display:flex; align-items:flex-end; gap:0;">
+      <div class="sub" id="headSub">COVERED: — / —<br>DATE: —</div>
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="practice" class="active">Topic Test</button>
+    <button data-tab="learn">Study Book</button>
+    <button data-tab="revise">Revise</button>
+  </nav>
+
+  <!-- TOPIC TEST -->
+  <section class="panel active" id="panel-practice">
+    <div id="practiceArea"></div>
+  </section>
+
+  <!-- STUDY BOOK -->
+  <section class="panel" id="panel-learn">
+    <div id="learnArea"></div>
+  </section>
+
+  <!-- REVISE (3-7-21 spaced revision) -->
+  <section class="panel" id="panel-revise">
+    <div id="reviseArea"></div>
+  </section>
+
+  <!-- MANAGE BANK -->
+  <section class="panel" id="panel-manage">
+    <div id="manageArea"></div>
+  </section>
+
+  <!-- STATS / REGISTER -->
+  <section class="panel" id="panel-stats">
+    <div id="statsArea"></div>
+  </section>
+
+</div>
+
+<!-- Floating action menu: Add questions / Manage / Register / Settings -->
+<div class="fab-wrap" id="fabWrap">
+  <div class="fab-menu" id="fabMenu">
+    <button class="fab-item" id="fabAdd" title="Add questions"><span class="fab-item-icon fab-item-icon-plus">+</span>Add questions</button>
+    <button class="fab-item" id="fabManage" title="Manage"><span class="fab-item-icon">&#9776;</span>Manage</button>
+    <button class="fab-item" id="fabRegister" title="Register"><span class="fab-item-icon">&#9998;</span>Register</button>
+    <button class="fab-item" id="fabSettings" title="Settings"><span class="fab-item-icon">&#9881;</span>Settings</button>
+  </div>
+  <button class="fab" id="fabMain" title="Menu">+</button>
+</div>
+
+<!-- Add-questions modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-card">
+    <button class="modal-close" id="addModalClose" aria-label="Close">&times;</button>
+    <h2 class="modal-title">Add Questions</h2>
+
+    <div class="card">
+      <h2>Category &amp; Topic</h2>
+      <label for="addCatSelect">Category</label>
+      <select id="addCatSelect"></select>
+      <div id="addCatNewWrap" style="display:none;">
+        <input type="text" id="addCatNew" placeholder="New category name" style="margin-top:8px;">
+      </div>
+      <div class="field-error" id="err-addCatSelect"></div>
+      <div class="field-error" id="err-addCatNew"></div>
+
+      <label for="addTopicSelect">Topic</label>
+      <select id="addTopicSelect"></select>
+      <div id="addTopicNewWrap" style="display:none;">
+        <input type="text" id="addTopicNew" placeholder="New topic name" style="margin-top:8px;">
+      </div>
+      <div class="field-error" id="err-addTopicSelect"></div>
+      <div class="field-error" id="err-addTopicNew"></div>
+    </div>
+
+    <div class="card">
+      <h2>Bulk import</h2>
+      <p class="muted"><strong>Plain text</strong> (any number of questions):<br>
+      <code>Q1. Question text<br>A) option<br>B) option<br>C) option<br>D) option<br>Ans: B</code></p>
+      <p class="muted"><strong>Json format</strong>:<br>
+      <code>[{"question":"...","options":{"A":"...","B":"...","C":"...","D":"..."},"answer":"B"}]</code></p>
+      <label for="bulkText">Paste question text or JSON</label>
+      <textarea id="bulkText" placeholder="Paste your Q/A/Ans text, or Json format of questions..."></textarea>
+      <div class="field-error" id="err-bulkText"></div>
+      <div class="row" style="margin-top:12px;">
+        <button class="primary" id="parseBtn">Parse &amp; add to bank</button>
+      </div>
+      <div id="importResult"></div>
+    </div>
+
+    <div class="card">
+      <h2>Add one question manually</h2>
+      <label for="manQ">Question</label>
+      <textarea id="manQ" style="min-height:70px;"></textarea>
+      <div class="field-error" id="err-manQ"></div>
+      <label>Options</label>
+      <input type="text" id="manA" placeholder="A) ...">
+      <div class="field-error" id="err-manA"></div>
+      <input type="text" id="manB" placeholder="B) ..." style="margin-top:6px;">
+      <div class="field-error" id="err-manB"></div>
+      <input type="text" id="manC" placeholder="C) ..." style="margin-top:6px;">
+      <div class="field-error" id="err-manC"></div>
+      <input type="text" id="manD" placeholder="D) ..." style="margin-top:6px;">
+      <div class="field-error" id="err-manD"></div>
+      <label for="manAns">Correct answer (A/B/C/D)</label>
+      <input type="text" id="manAns" maxlength="1" style="width:60px;">
+      <div class="field-error" id="err-manAns"></div>
+      <div class="row" style="margin-top:12px;">
+        <button class="primary" id="manAddBtn">Add question</button>
+      </div>
+      <div id="manResult"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal: backup / restore / reset -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-card">
+    <button class="modal-close" id="settingsModalClose" aria-label="Close">&times;</button>
+    <h2 class="modal-title">Settings</h2>
+
+    <div class="card">
+      <h2>Backup &amp; transfer</h2>
+      <div class="row">
+        <button class="secondary" id="exportBtn">Export backup (.json)</button>
+        <button class="secondary" id="restoreBtn">Restore from backup</button>
+        <input type="file" id="restoreFile" accept="application/json,.json" style="display:none;">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Reset</h2>
+      <p class="muted">Clears the entire question bank and history in your account. Cannot be undone.</p>
+      <button class="secondary danger" id="resetBtn">Clear all data</button>
+    </div>
+
+    <div class="card">
+      <h2>Account</h2>
+      <p class="muted" id="accountEmail" style="font-family:'Courier New',monospace; font-size:0.78rem;"></p>
+      <button class="secondary danger" id="signOutBtn">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Revision-due reminder popup: shown each time the app is opened, if anything is due -->
+<div class="revision-toast" id="revisionToast">
+  <button class="revision-toast-close" id="revisionToastClose" aria-label="Close">&times;</button>
+  <div class="revision-toast-icon">&#9200;</div>
+  <div class="revision-toast-body">
+    <div class="revision-toast-title">Revision due today</div>
+    <p class="revision-toast-msg" id="revisionToastMsg"></p>
+    <button class="primary revision-toast-btn" id="revisionToastGo">Start revision</button>
+  </div>
+</div>
+
+<!-- Auth overlay: email/password sign-in gate, shown until authenticated -->
+<div class="modal-overlay open" id="authOverlay" style="z-index:200;">
+  <div class="modal-card">
+    <h2 class="modal-title" id="authTitle">Sign in</h2>
+    <div class="card">
+      <label for="authEmail">Email</label>
+      <input type="text" id="authEmail" autocomplete="email" inputmode="email">
+      <label for="authPassword">Password</label>
+      <input type="password" id="authPassword" autocomplete="current-password">
+      <div class="field-error" id="authErr"></div>
+      <div class="row" style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="primary" id="authSubmitBtn">Sign in</button>
+        <button class="secondary" id="authToggleBtn" type="button">Need an account? Sign up</button>
+      </div>
+      <p class="muted" id="authStatus" style="margin-top:10px;"></p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, signOut
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, getDocs, getDoc, setDoc, deleteDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCY9Gjztg_Pu-PvhMd13V6hKQlWTNrXFBQ",
+  authDomain: "answer-sheet-sync.firebaseapp.com",
+  projectId: "answer-sheet-sync",
+  storageBucket: "answer-sheet-sync.firebasestorage.app",
+  messagingSenderId: "159920034387",
+  appId: "1:159920034387:web:acf2fadddc0be8334b6ca6",
+  measurementId: "G-7X9058S39T"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+let currentUid = null;
+
+(function(){
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const STOP_MIN = 25; // minimum questions to answer before a topic test can be stopped early
+
+  // ---------- storage: Firestore (users/{uid}/questions/*, users/{uid}/meta/*) ----------
+  let storageOK = true;
+  const CHUNK = 400; // stay comfortably under Firestore's 500-op batch limit
+
+  function chunkArr(arr, size){
+    const out = [];
+    for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size));
+    return out;
+  }
+  function colFor(storeName){
+    return collection(db, 'users', currentUid, storeName);
+  }
+
+  async function idbGetAll(storeName){
+    const snap = await getDocs(colFor(storeName));
+    const out = [];
+    snap.forEach(d=>out.push(d.data()));
+    return out;
+  }
+  async function idbGet(storeName, key){
+    const snap = await getDoc(doc(colFor(storeName), String(key)));
+    return snap.exists() ? snap.data() : undefined;
+  }
+  async function idbPutMany(storeName, values){
+    for(const part of chunkArr(values, CHUNK)){
+      const batch = writeBatch(db);
+      const idField = storeName==='meta' ? 'key' : 'id';
+      part.forEach(v=>{ batch.set(doc(colFor(storeName), String(v[idField])), v); });
+      await batch.commit();
+    }
+  }
+  async function idbClear(storeName){
+    const snap = await getDocs(colFor(storeName));
+    const ids = []; snap.forEach(d=>ids.push(d.id));
+    for(const part of chunkArr(ids, CHUNK)){
+      const batch = writeBatch(db);
+      part.forEach(id=>batch.delete(doc(colFor(storeName), id)));
+      await batch.commit();
+    }
+  }
+  async function idbDelete(storeName, key){
+    await deleteDoc(doc(colFor(storeName), String(key)));
+  }
+
+  async function getData(key, fallback){
+    try{
+      const rec = await idbGet('meta', key);
+      return rec ? rec.value : fallback;
+    }catch(e){ storageOK = false; return fallback; }
+  }
+  async function setData(key, value){
+    try{ await idbPutMany('meta', [{key, value}]); }
+    catch(e){ storageOK = false; console.error('storage set failed', key, e); }
+  }
+  async function deleteData(key){
+    try{ await idbDelete('meta', key); }
+    catch(e){ /* ignore */ }
+  }
+
+  const todayStr = () => new Date().toISOString().slice(0,10);
+
+  // ---------- 3-7-21 spaced revision pipeline ----------
+  // Per-question fields added on top of the existing model (all optional/backfilled,
+  // so older records and every existing feature keep working untouched):
+  //   learned            bool   — has this been marked as learned at least once
+  //   learnedDate        str    — yyyy-mm-dd it was first marked learned
+  //   revisionStage      num    — 0 not started, 1 awaiting Day+3, 2 awaiting Day+7,
+  //                               3 awaiting Day+21, 4 revision cycle complete
+  //   nextRevisionDate   str    — yyyy-mm-dd this question is next due, or null
+  //   revisionWrongCount num    — times answered incorrectly during a scheduled
+  //                               revision or repeat-mistakes session (>=2 = "repeated mistake")
+  const REVISION_STAGE_DAYS = { 1:3, 2:7, 3:21 };
+  function addDays(dateStr, n){
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0,10);
+  }
+  function applyRevisionDefaults(q){
+    if(typeof q.learned !== 'boolean') q.learned = false;
+    if(q.learnedDate === undefined) q.learnedDate = null;
+    if(typeof q.revisionStage !== 'number') q.revisionStage = 0;
+    if(q.nextRevisionDate === undefined) q.nextRevisionDate = null;
+    if(typeof q.revisionWrongCount !== 'number') q.revisionWrongCount = 0;
+  }
+  function markLearned(q, on){
+    if(on){
+      q.learned = true;
+      q.learnedDate = todayStr();
+      q.revisionStage = 1;
+      q.nextRevisionDate = addDays(todayStr(), REVISION_STAGE_DAYS[1]);
+    } else {
+      q.learned = false;
+      q.learnedDate = null;
+      q.revisionStage = 0;
+      q.nextRevisionDate = null;
+    }
+  }
+  function advanceRevision(q, correct){
+    if(correct){
+      const next = (q.revisionStage||0) + 1;
+      if(next <= 3){
+        q.revisionStage = next;
+        q.nextRevisionDate = addDays(todayStr(), REVISION_STAGE_DAYS[next]);
+      } else {
+        q.revisionStage = 4; // cycle complete
+        q.nextRevisionDate = null;
+      }
+    } else {
+      q.revisionWrongCount = (q.revisionWrongCount||0) + 1;
+      q.nextRevisionDate = addDays(todayStr(), 1); // stays at the same stage, retries tomorrow
+    }
+  }
+  function revisionStageLabel(stage){
+    if(stage===1) return 'Day 3';
+    if(stage===2) return 'Day 7';
+    if(stage===3) return 'Day 21';
+    if(stage===4) return 'Completed';
+    return 'Not learned';
+  }
+  function dueRevisionSet(){
+    const today = todayStr();
+    return bank.filter(q=>q.revisionStage>=1 && q.revisionStage<=3 && q.nextRevisionDate && q.nextRevisionDate<=today);
+  }
+  function repeatedMistakeSet(){
+    return bank.filter(q=>(q.revisionWrongCount||0)>=2);
+  }
+
+  let bank = [];      // flat array of every question
+  let stats = { history: [] };
+  let session = null;     // active test/practice session
+  let bookSession = null; // active study-book reading session
+  let bookMnemonicEditing = false; // whether the mnemonic textarea is open on the current book page
+  let bookMnemonicMenuOpen = false; // whether the mnemonic edit/delete menu is open
+  let bookProgress = {};  // per-topic last-read page, saved server-side: { "<scopeKey>": idx }
+
+  // Same scope (category+topic+reviewOnly) always maps to the same key, so each topic
+  // keeps its own remembered page independent of whatever other topic was opened after it.
+  function bookScopeKey(category, topic, reviewOnly){
+    return `${category||'__all__'}||${topic||'__all__'}||${reviewOnly?'flagged':'all'}`;
+  }
+
+  async function loadBank(){
+    try{
+      bank = await idbGetAll('questions');
+    }catch(e){
+      storageOK = false;
+      bank = [];
+      console.error('Could not open local storage — running in-memory only this session.', e);
+    }
+    // migrate older records that predate category/topic split
+    bank.forEach(q=>{
+      if(!q.category) q.category = 'General';
+      if(!q.topic) q.topic = 'General';
+      if(typeof q.flagged !== 'boolean') q.flagged = false;
+      applyRevisionDefaults(q);
+    });
+  }
+
+  async function addQuestionsToBank(items){
+    bank = bank.concat(items);
+    try{ await idbPutMany('questions', items); }
+    catch(e){ storageOK = false; console.error('storage write failed', e); }
+  }
+
+  async function saveChunkFor(question){
+    try{ await idbPutMany('questions', [question]); }
+    catch(e){ storageOK = false; console.error('storage write failed', e); }
+  }
+
+  async function deleteQuestionFromBank(id){
+    bank = bank.filter(q=>q.id!==id);
+    try{ await idbDelete('questions', id); }
+    catch(e){ storageOK = false; console.error('storage delete failed', e); }
+  }
+
+  async function updateQuestionInBank(id, updates){
+    const q = findQ(id);
+    if(!q) return;
+    Object.assign(q, updates);
+    await saveChunkFor(q);
+  }
+
+  async function bulkUpdateTopic(category, topic, changes){
+    const affected = bank.filter(q=>q.category===category && q.topic===topic);
+    affected.forEach(q=>Object.assign(q, changes));
+    try{ await idbPutMany('questions', affected); }
+    catch(e){ storageOK = false; console.error('storage write failed', e); }
+    return affected.length;
+  }
+
+  // Deletes every question in a category, optionally narrowed to one topic.
+  // Pass topic===null to delete the whole category (all its topics).
+  async function deleteScopeFromBank(category, topic){
+    const toRemove = bank.filter(q=>q.category===category && (topic===null || q.topic===topic));
+    const ids = toRemove.map(q=>q.id);
+    bank = bank.filter(q=>!ids.includes(q.id));
+    try{ for(const id of ids) await idbDelete('questions', id); }
+    catch(e){ storageOK = false; console.error('storage delete failed', e); }
+    return ids.length;
+  }
+
+  // ---------- backup: export / restore ----------
+  async function exportBackup(){
+    const blob = new Blob([JSON.stringify({ version:2, exportedAt:new Date().toISOString(), questions:bank, stats }, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `answer-sheet-backup-${todayStr()}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function slugify(str){
+    return String(str).trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'export';
+  }
+
+  // Exports just the questions in a category, optionally narrowed to one topic,
+  // as a standalone JSON file (no stats/history — just the questions themselves).
+  // The file uses the same {version, questions:[...]} shape restoreBackup() reads,
+  // so it can be re-imported later (into this bank or a different one).
+  function exportScope(category, topic){
+    const qs = bank.filter(q=>q.category===category && (topic===null || q.topic===topic));
+    if(!qs.length){ alert('No questions to export in this scope.'); return; }
+    const blob = new Blob([JSON.stringify({ version:2, exportedAt:new Date().toISOString(), category, topic: topic===null ? undefined : topic, questions:qs }, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const namePart = topic===null ? slugify(category) : `${slugify(category)}-${slugify(topic)}`;
+    a.href = url; a.download = `answer-sheet-${namePart}-${todayStr()}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function restoreBackup(file){
+    const text = await file.text();
+    let data;
+    try{ data = JSON.parse(text); }catch(e){ alert('That file is not valid JSON.'); return; }
+    const qs = Array.isArray(data.questions) ? data.questions : (Array.isArray(data) ? data : null);
+    if(!qs){ alert("This doesn't look like an Answer Sheet backup file."); return; }
+    if(!confirm(`This replaces your current bank (${bank.length} questions) with ${qs.length} from the backup. Continue?`)) return;
+    qs.forEach(q=>{ if(!q.category) q.category='General'; if(!q.topic) q.topic='General'; applyRevisionDefaults(q); });
+    try{ await idbClear('questions'); await idbPutMany('questions', qs); }
+    catch(e){ storageOK = false; }
+    bank = qs;
+    if(data.stats){
+      stats = Object.assign({history:[]}, data.stats);
+      if(!Array.isArray(stats.history)) stats.history = [];
+      await setData('stats', stats);
+    }
+    updateHeadSub(); renderStats(); renderPractice();
+    if($('#manageArea')) renderManage();
+    alert('Backup restored.');
+  }
+
+  // ---------- tabs ----------
+  function setPracticeTabLocked(locked){
+    const btn = document.querySelector('nav.tabs button[data-tab="practice"]');
+    if(btn) btn.disabled = !!locked;
+  }
+  function setLearnTabLocked(locked){
+    const btn = document.querySelector('nav.tabs button[data-tab="learn"]');
+    if(btn) btn.disabled = !!locked;
+  }
+  function setReviseTabLocked(locked){
+    const btn = document.querySelector('nav.tabs button[data-tab="revise"]');
+    if(btn) btn.disabled = !!locked;
+  }
+  function switchTab(tab){
+    $$('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    $$('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+tab));
+    $$('.fab-item').forEach(b=>b.classList.remove('active'));
+    if(tab==='manage' && $('#fabManage')) $('#fabManage').classList.add('active');
+    if(tab==='stats' && $('#fabRegister')) $('#fabRegister').classList.add('active');
+    if(tab==='stats') renderStats();
+    if(tab==='practice') renderPractice();
+    if(tab==='learn') openLearnTab();
+    if(tab==='manage') renderManage();
+    if(tab==='revise') renderRevise();
+  }
+  $$('nav.tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+  });
+
+  // ---------- floating action menu ----------
+  function openFabMenu(){ $('#fabWrap').classList.add('open'); $('#fabMenu').classList.add('open'); }
+  function closeFabMenu(){ $('#fabWrap').classList.remove('open'); $('#fabMenu').classList.remove('open'); }
+  function toggleFabMenu(){ $('#fabWrap').classList.contains('open') ? closeFabMenu() : openFabMenu(); }
+  $('#fabMain').addEventListener('click', toggleFabMenu);
+  document.addEventListener('click', (e)=>{
+    if(!$('#fabWrap').contains(e.target)) closeFabMenu();
+  });
+  $('#fabManage').addEventListener('click', ()=>{ closeFabMenu(); switchTab('manage'); });
+  $('#fabRegister').addEventListener('click', ()=>{ closeFabMenu(); switchTab('stats'); });
+  $('#fabSettings').addEventListener('click', ()=>{ closeFabMenu(); openSettingsModal(); });
+
+  // Close the mnemonic options menu when clicking anywhere outside it
+  document.addEventListener('click', (e)=>{
+    if(!bookMnemonicMenuOpen) return;
+    const wrap = $('.book-mnemonic-menu-wrap');
+    if(wrap && !wrap.contains(e.target)){
+      bookMnemonicMenuOpen = false;
+      const area = $('#learnArea');
+      if(area) renderBookPage(area);
+    }
+  });
+
+  function coveredCount(){ return bank.filter(q=>q.seenCount>0).length; }
+
+  function updateHeadSub(){
+    $('#headSub').innerHTML = `COVERED: ${coveredCount()}/${bank.length}<br>DATE: ${todayStr()}`;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- category / topic helpers ----------
+  function getCategories(){ return Array.from(new Set(bank.map(q=>q.category))).sort(); }
+  function getTopics(category){ return Array.from(new Set(bank.filter(q=>q.category===category).map(q=>q.topic))).sort(); }
+  function categoryCounts(){ const m={}; bank.forEach(q=>{ m[q.category]=(m[q.category]||0)+1; }); return m; }
+  function scopeCount(category, topic){
+    let pool = bank;
+    if(category && category!=='__all__') pool = pool.filter(q=>q.category===category);
+    if(topic && topic!=='__all__') pool = pool.filter(q=>q.topic===topic);
+    return pool.length;
+  }
+  function wrongScopeCount(category, topic){
+    let pool = bank.filter(q=>q.lastResult==='incorrect');
+    if(category && category!=='__all__') pool = pool.filter(q=>q.category===category);
+    if(topic && topic!=='__all__') pool = pool.filter(q=>q.topic===topic);
+    return pool.length;
+  }
+  function flaggedScopeCount(category, topic){
+    let pool = bank.filter(q=>q.flagged);
+    if(category && category!=='__all__') pool = pool.filter(q=>q.category===category);
+    if(topic && topic!=='__all__') pool = pool.filter(q=>q.topic===topic);
+    return pool.length;
+  }
+  function shuffleArr(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]); }
+
+  // Orders a pool so a topic test always pushes coverage forward: questions never
+  // seen yet come first, in the order they were added, so each session continues
+  // where the last one left off instead of re-shuffling into already-attempted ones.
+  // Once everything in scope has been seen at least once, it cycles starting with
+  // whichever question was practiced longest ago.
+  function orderForCoverage(pool){
+    const unseen = pool.filter(q=>!q.seenCount);
+    const seen = pool.filter(q=>q.seenCount)
+      .sort((a,b)=> new Date(a.lastSeen||0) - new Date(b.lastSeen||0));
+    return [...unseen, ...seen];
+  }
+
+  // ---------- add-questions modal: field error helpers ----------
+  function setErr(id, msg){ const el = $('#err-'+id); if(el) el.textContent = msg || ''; }
+  function clearErrs(ids){ ids.forEach(id=>setErr(id,'')); }
+  $$('#addModal input, #addModal textarea').forEach(el=>{
+    el.addEventListener('input', ()=> setErr(el.id, ''));
+  });
+  $$('#addModal select').forEach(el=>{
+    el.addEventListener('change', ()=> setErr(el.id, ''));
+  });
+
+  // ---------- add-questions modal: category/topic pickers ----------
+  function populateAddCatSelect(){
+    const cats = getCategories();
+    let html = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)} (${bank.filter(q=>q.category===c).length})</option>`).join('');
+    html += `<option value="__new__">+ Add new category</option>`;
+    $('#addCatSelect').innerHTML = html;
+    if(cats.length===0) $('#addCatSelect').value = '__new__';
+    onAddCatChange();
+  }
+  function onAddCatChange(){
+    const val = $('#addCatSelect').value;
+    const isNew = val === '__new__';
+    $('#addCatNewWrap').style.display = isNew ? 'block' : 'none';
+    if(isNew){
+      $('#addTopicSelect').style.display = 'none';
+      $('#addTopicNewWrap').style.display = 'block';
+    } else {
+      $('#addTopicSelect').style.display = 'block';
+      populateAddTopicSelect(val);
+    }
+  }
+  function populateAddTopicSelect(category){
+    const topics = getTopics(category);
+    let html = topics.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)} (${bank.filter(q=>q.category===category && q.topic===t).length})</option>`).join('');
+    html += `<option value="__new__">+ Add new topic</option>`;
+    $('#addTopicSelect').innerHTML = html;
+    if(topics.length===0) $('#addTopicSelect').value = '__new__';
+    onAddTopicChange();
+  }
+  function onAddTopicChange(){
+    const val = $('#addTopicSelect').value;
+    $('#addTopicNewWrap').style.display = (val==='__new__') ? 'block' : 'none';
+  }
+  $('#addCatSelect').addEventListener('change', onAddCatChange);
+  $('#addTopicSelect').addEventListener('change', onAddTopicChange);
+
+  function getSelectedAddCategory(){
+    const val = $('#addCatSelect').value;
+    return val==='__new__' ? $('#addCatNew').value.trim() : val.trim();
+  }
+  function getSelectedAddTopic(){
+    if($('#addCatSelect').value === '__new__') return $('#addTopicNew').value.trim();
+    const val = $('#addTopicSelect').value;
+    return val==='__new__' ? $('#addTopicNew').value.trim() : val.trim();
+  }
+  function validateCatTopic(){
+    let valid = true;
+    const category = getSelectedAddCategory();
+    const topic = getSelectedAddTopic();
+    if(!category){
+      if($('#addCatSelect').value==='__new__') setErr('addCatNew','Please type a category name.');
+      else setErr('addCatSelect','Please choose a category.');
+      valid = false;
+    }
+    if(!topic){
+      if($('#addCatSelect').value==='__new__' || $('#addTopicSelect').value==='__new__') setErr('addTopicNew','Please type a topic name.');
+      else setErr('addTopicSelect','Please choose a topic.');
+      valid = false;
+    }
+    return { category, topic, valid };
+  }
+  function reselectCatTopic(cat, top){
+    $('#addCatNew').value = '';
+    $('#addTopicNew').value = '';
+    populateAddCatSelect();
+    const catExists = Array.from($('#addCatSelect').options).some(o=>o.value===cat);
+    $('#addCatSelect').value = catExists ? cat : '__new__';
+    onAddCatChange();
+    if($('#addCatSelect').value !== '__new__'){
+      const topExists = Array.from($('#addTopicSelect').options).some(o=>o.value===top);
+      if(topExists) $('#addTopicSelect').value = top;
+      onAddTopicChange();
+    }
+  }
+
+  // ---------- modal open/close ----------
+  function openAddModal(){
+    $('#addCatNew').value = '';
+    $('#addTopicNew').value = '';
+    populateAddCatSelect();
+    $('#addModal').classList.add('open');
+  }
+  function closeAddModal(){ $('#addModal').classList.remove('open'); }
+  $('#fabAdd').addEventListener('click', ()=>{ closeFabMenu(); openAddModal(); });
+  $('#addModalClose').addEventListener('click', closeAddModal);
+  $('#addModal').addEventListener('click', (e)=>{ if(e.target.id==='addModal') closeAddModal(); });
+
+  function openSettingsModal(){ $('#settingsModal').classList.add('open'); }
+  function closeSettingsModal(){ $('#settingsModal').classList.remove('open'); }
+  $('#settingsModalClose').addEventListener('click', closeSettingsModal);
+  $('#settingsModal').addEventListener('click', (e)=>{ if(e.target.id==='settingsModal') closeSettingsModal(); });
+  $('#exportBtn').addEventListener('click', exportBackup);
+  $('#restoreBtn').addEventListener('click', ()=> $('#restoreFile').click());
+  $('#restoreFile').addEventListener('change', (e)=>{
+    if(e.target.files && e.target.files[0]) restoreBackup(e.target.files[0]);
+    e.target.value = '';
+  });
+  $('#resetBtn').addEventListener('click', async ()=>{
+    if(!confirm('This will permanently delete your entire question bank and history. Continue?')) return;
+    try{ await idbClear('questions'); }catch(e){ /* ignore */ }
+    bank = [];
+    stats = { history: [] };
+    session = null;
+    await setData('stats', stats);
+    await deleteData('active-session');
+    updateHeadSub();
+    closeSettingsModal();
+    renderManage();
+    renderPractice();
+    renderStats();
+  });
+
+
+  // ---------- text parser ----------
+  function parseQuestions(text, category, topic){
+    const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
+    const qStart = /^Q?\s*(\d+)\s*[\.\)]\s*(.*)$/;
+    const optLine = /^([A-D])\)\s*(.*)$/;
+    const ansLine = /^Ans:?\s*([A-D])\b/i;
+
+    let results = [];
+    let current = null;
+    let phase = null;
+    let lastOptKey = null;
+
+    function flush(){
+      if(current && current.question && current.options.A && current.options.B && current.options.C && current.options.D && current.answer){
+        results.push(current);
+      }
+      current = null; phase = null; lastOptKey = null;
+    }
+
+    for(const line of lines){
+      const qm = qStart.exec(line);
+      const om = optLine.exec(line);
+      const am = ansLine.exec(line);
+
+      if(qm){
+        flush();
+        current = { question: qm[2].trim(), options:{}, answer:null };
+        phase = 'question';
+        continue;
+      }
+      if(!current) continue;
+
+      if(om && phase!=='done'){
+        current.options[om[1]] = om[2].trim();
+        phase = 'options';
+        lastOptKey = om[1];
+        continue;
+      }
+      if(am){
+        current.answer = am[1].toUpperCase();
+        phase = 'done';
+        continue;
+      }
+      if(phase==='question'){
+        current.question += ' ' + line;
+      } else if(phase==='options' && lastOptKey){
+        current.options[lastOptKey] += ' ' + line;
+      }
+    }
+    flush();
+
+    const now = new Date().toISOString();
+    return results.map(r => ({
+      id: 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+      category: (category||'General').trim() || 'General',
+      topic: (topic||'General').trim() || 'General',
+      question: r.question,
+      options: r.options,
+      answer: r.answer,
+      addedDate: now,
+      seenCount: 0,
+      correctCount: 0,
+      lastSeen: null,
+      lastResult: null,
+      flagged: false,
+      learned: false,
+      learnedDate: null,
+      revisionStage: 0,
+      nextRevisionDate: null,
+      revisionWrongCount: 0
+    }));
+  }
+
+  // ---------- JSON parser ----------
+  function normalizeOptions(raw){
+    if(Array.isArray(raw)){
+      const letters = ['A','B','C','D'];
+      const out = {};
+      raw.slice(0,4).forEach((v,i)=>{ out[letters[i]] = String(v).trim(); });
+      return out;
+    }
+    if(raw && typeof raw === 'object'){
+      const out = {};
+      const keys = Object.keys(raw);
+      const letterMap = {a:'A',b:'B',c:'C',d:'D'};
+      keys.forEach(k=>{
+        const kl = k.trim().toLowerCase();
+        if(letterMap[kl]) out[letterMap[kl]] = String(raw[k]).trim();
+      });
+      return out;
+    }
+    return null;
+  }
+
+  function resolveAnswer(rawAns, options){
+    if(rawAns===undefined || rawAns===null) return null;
+    if(typeof rawAns === 'number'){
+      const letters = ['A','B','C','D'];
+      return letters[rawAns] || null;
+    }
+    const s = String(rawAns).trim();
+    if(/^[A-Da-d]$/.test(s)) return s.toUpperCase();
+    for(const letter of ['A','B','C','D']){
+      if(options[letter] && options[letter].trim().toLowerCase() === s.toLowerCase()) return letter;
+    }
+    return null;
+  }
+
+  function parseJSONQuestions(raw, defaultCategory, defaultTopic){
+    let data;
+    try{ data = JSON.parse(raw); }catch(e){ return { items:[], error: 'Invalid JSON: '+e.message }; }
+    let arr = Array.isArray(data) ? data : (Array.isArray(data.questions) ? data.questions : null);
+    if(!arr) return { items:[], error: 'JSON must be an array of questions (or an object with a "questions" array).' };
+
+    const now = new Date().toISOString();
+    const items = [];
+    let skipped = 0;
+    arr.forEach(raw=>{
+      const question = raw.question || raw.q || raw.text || raw.prompt;
+      const options = normalizeOptions(raw.options || raw.choices || raw.opts);
+      if(!question || !options || !options.A || !options.B || !options.C || !options.D){ skipped++; return; }
+      const answer = resolveAnswer(raw.answer ?? raw.ans ?? raw.correct ?? raw.correctAnswer, options);
+      if(!answer){ skipped++; return; }
+      items.push({
+        id: 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+        category: (defaultCategory || 'General').toString().trim() || 'General',
+        topic: (defaultTopic || 'General').toString().trim() || 'General',
+        question: String(question).trim(),
+        options, answer, addedDate: now,
+        seenCount:0, correctCount:0, lastSeen:null, lastResult:null, flagged:false,
+        learned:false, learnedDate:null, revisionStage:0, nextRevisionDate:null, revisionWrongCount:0
+      });
+    });
+    return { items, skipped };
+  }
+
+  // ---------- import handlers ----------
+  $('#parseBtn').addEventListener('click', async ()=>{
+    clearErrs(['bulkText','addCatSelect','addCatNew','addTopicSelect','addTopicNew']);
+    const { category, topic, valid } = validateCatTopic();
+    const text = $('#bulkText').value;
+    let ok = valid;
+    if(!text.trim()){ setErr('bulkText','Paste some question text or JSON first.'); ok = false; }
+    const resEl = $('#importResult');
+    resEl.textContent = ''; resEl.className = '';
+    if(!ok) return;
+
+    const trimmed = text.trim();
+    const looksLikeJson = trimmed.startsWith('[') || trimmed.startsWith('{');
+    let parsed, note = '';
+
+    if(looksLikeJson){
+      const result = parseJSONQuestions(trimmed, category, topic);
+      if(result.error){
+        resEl.className = 'import-result err';
+        resEl.textContent = result.error;
+        return;
+      }
+      parsed = result.items;
+      if(result.skipped) note = ` (${result.skipped} entr${result.skipped>1?'ies':'y'} skipped — missing question, options, or a resolvable answer)`;
+    } else {
+      parsed = parseQuestions(text, category, topic);
+    }
+
+    if(parsed.length===0){
+      resEl.className = 'import-result err';
+      resEl.textContent = looksLikeJson
+        ? `No usable questions found in the JSON.${note}`
+        : "Couldn't find any complete questions (need a question, 4 options A–D, and an Ans: line). Check the format and try again.";
+      return;
+    }
+    await addQuestionsToBank(parsed);
+    resEl.className = 'import-result ok';
+    resEl.textContent = `Added ${parsed.length} question${parsed.length>1?'s':''} to ${escapeHtml(category)} → ${escapeHtml(topic)}.${note} Total bank size: ${bank.length}.`;
+    $('#bulkText').value = '';
+    reselectCatTopic(category, topic);
+    updateHeadSub();
+    renderPractice();
+  });
+
+  $('#manAddBtn').addEventListener('click', async ()=>{
+    clearErrs(['manQ','manA','manB','manC','manD','manAns','addCatSelect','addCatNew','addTopicSelect','addTopicNew']);
+    const { category, topic, valid: ctValid } = validateCatTopic();
+    const q = $('#manQ').value.trim();
+    const a = $('#manA').value.replace(/^A\)\s*/,'').trim();
+    const b = $('#manB').value.replace(/^B\)\s*/,'').trim();
+    const c = $('#manC').value.replace(/^C\)\s*/,'').trim();
+    const d = $('#manD').value.replace(/^D\)\s*/,'').trim();
+    const ans = $('#manAns').value.trim().toUpperCase();
+    const resEl = $('#manResult');
+    resEl.textContent = ''; resEl.className = '';
+
+    let ok = ctValid;
+    if(!q){ setErr('manQ','Please type the question text.'); ok = false; }
+    if(!a){ setErr('manA','Please fill in option A.'); ok = false; }
+    if(!b){ setErr('manB','Please fill in option B.'); ok = false; }
+    if(!c){ setErr('manC','Please fill in option C.'); ok = false; }
+    if(!d){ setErr('manD','Please fill in option D.'); ok = false; }
+    if(!['A','B','C','D'].includes(ans)){ setErr('manAns','Enter A, B, C, or D.'); ok = false; }
+    if(!ok) return;
+
+    const item = {
+      id: 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+      category, topic, question: q, options:{A:a,B:b,C:c,D:d}, answer: ans,
+      addedDate: new Date().toISOString(), seenCount:0, correctCount:0, lastSeen:null, lastResult:null, flagged:false,
+      learned:false, learnedDate:null, revisionStage:0, nextRevisionDate:null, revisionWrongCount:0
+    };
+    await addQuestionsToBank([item]);
+    resEl.className = 'import-result ok';
+    resEl.textContent = `Question added to ${escapeHtml(category)} → ${escapeHtml(topic)}.`;
+    ['#manQ','#manA','#manB','#manC','#manD','#manAns'].forEach(s=>$(s).value='');
+    reselectCatTopic(category, topic);
+    updateHeadSub();
+    renderPractice();
+  });
+
+  // ---------- test / practice logic ----------
+  function pickTestSet(category, topic){
+    let pool = bank.slice();
+    if(category && category!=='__all__') pool = pool.filter(q=>q.category===category);
+    if(topic && topic!=='__all__') pool = pool.filter(q=>q.topic===topic);
+    return orderForCoverage(pool).map(q=>q.id);
+  }
+  function pickWrongSet(category, topic){
+    let pool = bank.filter(q=>q.lastResult==='incorrect');
+    if(category && category!=='__all__') pool = pool.filter(q=>q.category===category);
+    if(topic && topic!=='__all__') pool = pool.filter(q=>q.topic===topic);
+    return shuffleArr(pool).map(q=>q.id);
+  }
+
+  async function startSession(mode, category, topic){
+    const ids = mode === 'wrong' ? pickWrongSet(category, topic) : pickTestSet(category, topic);
+    session = {
+      mode, // 'topic' | 'wrong'
+      category: category || '__all__',
+      topic: topic || '__all__',
+      ids,
+      idx: 0,
+      answers: {},
+      skipped: {},
+      optionOrder: {},
+      completed: false
+    };
+    await setData('active-session', session);
+    renderPractice();
+  }
+
+  async function startSessionWithIds(mode, category, topic, ids){
+    session = {
+      mode,
+      category: category || '__all__',
+      topic: topic || '__all__',
+      ids: shuffleArr(ids),
+      idx: 0,
+      answers: {},
+      skipped: {},
+      optionOrder: {},
+      completed: false
+    };
+    await setData('active-session', session);
+    renderPractice();
+  }
+
+  function findQ(id){ return bank.find(q=>q.id===id); }
+
+  function scopeLabel(cat, top){
+    if(cat==='__all__') return 'All categories';
+    if(!top || top==='__all__') return escapeHtml(cat) + ' → All topics';
+    return escapeHtml(cat) + ' → ' + escapeHtml(top);
+  }
+  function sessionModeLabel(mode){
+    if(mode==='wrong') return 'Wrong-answer practice';
+    if(mode==='revise') return 'Revision (3-7-21)';
+    if(mode==='repeat') return 'Repeated-mistakes practice';
+    return 'Topic test';
+  }
+
+  async function submitAnswer(chosen){
+    const qid = session.ids[session.idx];
+    const q = findQ(qid);
+    if(!q || session.answers[qid]) return;
+    const correct = chosen === q.answer;
+    session.answers[qid] = chosen;
+    q.seenCount += 1;
+    q.lastSeen = new Date().toISOString();
+    q.lastResult = correct ? 'correct' : 'incorrect';
+    if(correct) q.correctCount += 1;
+
+    if(session.mode === 'revise'){
+      advanceRevision(q, correct); // moves the question to its next 3-7-21 stage, or reschedules for tomorrow if missed
+    } else if(session.mode === 'repeat'){
+      // Drilling the repeated-mistakes set specifically: a correct answer here
+      // walks the mistake count back down; another miss pushes it back up.
+      if(correct) q.revisionWrongCount = Math.max(0, (q.revisionWrongCount||0) - 1);
+      else q.revisionWrongCount = (q.revisionWrongCount||0) + 1;
+    }
+
+    await saveChunkFor(q);
+    await setData('active-session', session);
+    updateHeadSub();
+    renderPractice();
+  }
+
+  async function finishSession(){
+    session.completed = true;
+    const answeredIds = Object.keys(session.answers);
+    const correctCount = answeredIds.filter(id=>session.answers[id]===findQ(id).answer).length;
+    stats.history.push({
+      date: todayStr(), mode: session.mode, category: session.category, topic: session.topic,
+      attempted: answeredIds.length, total: session.ids.length, correct: correctCount
+    });
+    if(stats.history.length>60) stats.history = stats.history.slice(-60);
+    await setData('stats', stats);
+    await setData('active-session', session);
+    updateHeadSub();
+    renderPractice();
+  }
+
+  async function skipQuestion(){
+    const qid = session.ids[session.idx];
+    if(!session.skipped) session.skipped = {};
+    session.skipped[qid] = true;
+    await nextQuestion();
+  }
+
+  async function nextQuestion(){
+    session.idx += 1;
+    if(session.idx >= session.ids.length){
+      await finishSession();
+    } else {
+      await setData('active-session', session);
+      renderPractice();
+    }
+  }
+
+  async function backToMenu(){
+    session = null;
+    await deleteData('active-session');
+    renderPractice();
+  }
+
+  // ---------- practice tab: menu ----------
+  function renderMenu(area){
+    setLearnTabLocked(false);
+    setReviseTabLocked(false);
+    const catCounts = categoryCounts();
+    const catOptions = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])
+      .map(([c,n])=>`<option value="${escapeHtml(c)}">${escapeHtml(c)} (${n})</option>`).join('');
+
+    const wrongTotal = bank.filter(q=>q.lastResult==='incorrect').length;
+    const wrongCatCounts = {};
+    bank.forEach(q=>{ if(q.lastResult==='incorrect') wrongCatCounts[q.category] = (wrongCatCounts[q.category]||0)+1; });
+    const wrongCatOptions = Object.entries(wrongCatCounts).sort((a,b)=>b[1]-a[1])
+      .map(([c,n])=>`<option value="${escapeHtml(c)}">${escapeHtml(c)} (${n})</option>`).join('');
+
+    area.innerHTML = `
+      <div class="card">
+        <div class="stat-grid" style="grid-template-columns:1fr;">
+          <div class="stat-box"><div class="num">${coveredCount()}/${bank.length}</div><div class="lbl">Covered / Total questions</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Topic Test</h2>
+        <label for="testCatSelect">Category</label>
+        <select id="testCatSelect">
+          <option value="__all__">All categories (${bank.length})</option>
+          ${catOptions}
+        </select>
+        <label for="testTopicSelect">Topic</label>
+        <select id="testTopicSelect"></select>
+        <div class="field-error" id="err-testStart"></div>
+        <div class="row" style="margin-top:14px;">
+          <button class="primary" id="startTestBtn">Start topic test</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Practice wrong answers</h2>
+        ${wrongTotal===0
+          ? '<p class="muted">No wrong answers yet.</p>'
+          : `<label for="wrongCatSelect">Category</label>
+             <select id="wrongCatSelect">
+               <option value="__all__">All categories (${wrongTotal})</option>
+               ${wrongCatOptions}
+             </select>
+             <label for="wrongTopicSelect">Topic</label>
+             <select id="wrongTopicSelect"></select>
+             <div class="field-error" id="err-wrongStart"></div>
+             <div class="row" style="margin-top:14px;">
+               <button class="primary" id="startWrongBtn">Practice wrong answers (${wrongTotal})</button>
+             </div>`}
+      </div>`;
+
+    function refreshTestTopics(){
+      const cat = $('#testCatSelect').value;
+      const sel = $('#testTopicSelect');
+      if(cat==='__all__'){
+        sel.innerHTML = `<option value="__all__">All topics</option>`;
+        sel.disabled = true;
+      } else {
+        sel.disabled = false;
+        const topics = getTopics(cat);
+        const opts = topics.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)} (${bank.filter(q=>q.category===cat&&q.topic===t).length})</option>`).join('');
+        sel.innerHTML = `<option value="__all__">All topics in ${escapeHtml(cat)} (${catCounts[cat]||0})</option>` + opts;
+      }
+    }
+    refreshTestTopics();
+    $('#testCatSelect').addEventListener('change', refreshTestTopics);
+    $('#startTestBtn').addEventListener('click', ()=>{
+      const cat = $('#testCatSelect').value;
+      const top = $('#testTopicSelect').value;
+      if(scopeCount(cat, top) === 0){
+        setErr('testStart', 'There are no questions in that scope yet.');
+        return;
+      }
+      setErr('testStart','');
+      startSession('topic', cat, top);
+    });
+
+    if(wrongTotal>0){
+      function refreshWrongTopics(){
+        const cat = $('#wrongCatSelect').value;
+        const sel = $('#wrongTopicSelect');
+        if(cat==='__all__'){
+          sel.innerHTML = `<option value="__all__">All topics</option>`;
+          sel.disabled = true;
+        } else {
+          sel.disabled = false;
+          const topics = getTopics(cat).filter(t=>wrongScopeCount(cat,t)>0);
+          const opts = topics.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)} (${wrongScopeCount(cat,t)})</option>`).join('');
+          sel.innerHTML = `<option value="__all__">All topics in ${escapeHtml(cat)} (${wrongCatCounts[cat]||0})</option>` + opts;
+        }
+      }
+      refreshWrongTopics();
+      $('#wrongCatSelect').addEventListener('change', refreshWrongTopics);
+      $('#startWrongBtn').addEventListener('click', ()=>{
+        const cat = $('#wrongCatSelect').value;
+        const top = $('#wrongTopicSelect').value;
+        if(wrongScopeCount(cat, top) === 0){
+          setErr('wrongStart', 'No wrong answers in that scope.');
+          return;
+        }
+        setErr('wrongStart','');
+        startSession('wrong', cat, top);
+      });
+    }
+  }
+
+  // ---------- practice tab: completed screen ----------
+  function renderCompleted(area){
+    setLearnTabLocked(false);
+    setReviseTabLocked(false);
+    const answeredIds = Object.keys(session.answers);
+    const correctCount = answeredIds.filter(id=>session.answers[id]===findQ(id).answer).length;
+    const partial = answeredIds.length < session.ids.length;
+    const acc = answeredIds.length ? Math.round((correctCount/answeredIds.length)*100) : 0;
+    const label = scopeLabel(session.category, session.topic);
+    const modeLabel = sessionModeLabel(session.mode);
+    const misses = answeredIds.length - correctCount;
+    const skippedIds = Object.keys(session.skipped || {});
+
+    area.innerHTML = `<div class="card">
+      <div class="stamp-seal">TEST<br>DONE</div>
+      <h2>${modeLabel} complete — ${label}</h2>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="num">${correctCount}/${answeredIds.length}</div><div class="lbl">Score${partial?' (partial)':''}</div></div>
+        <div class="stat-box"><div class="num">${acc}%</div><div class="lbl">This session's accuracy</div></div>
+        <div class="stat-box"><div class="num">${coveredCount()}/${bank.length}</div><div class="lbl">Covered / Total</div></div>
+      </div>
+      ${skippedIds.length>0 ? `<p class="muted" style="margin-top:12px;">You skipped ${skippedIds.length} question${skippedIds.length>1?'s':''}.</p>` : ''}
+      <div class="row" style="margin-top:16px;">
+        ${(session.mode==='revise' && dueRevisionSet().length===0) ? ''
+          : (session.mode==='repeat' && repeatedMistakeSet().length===0) ? ''
+          : `<button class="secondary btn-retest" id="retestBtn">${session.mode==='revise' ? "Revise what's still due" : session.mode==='repeat' ? 'Practice repeated mistakes again' : 'Test this scope again'}</button>`}
+        ${misses>0 ? '<button class="secondary btn-wrong" id="wrongFromSessionBtn">Practice what you missed</button>' : ''}
+        ${skippedIds.length>0 ? `<button class="secondary btn-skipped" id="skippedBtn">Answer skipped questions</button>` : ''}
+        <button class="secondary btn-menu" id="menuBtn">Back to menu</button>
+      </div>
+    </div>`;
+    const rb = $('#retestBtn');
+    if(rb) rb.addEventListener('click', ()=>{
+      // 'revise' and 'repeat' sessions are driven by a specific due/mistake id set rather
+      // than a category+topic scope, so re-running them means re-picking that set fresh
+      // (it may have shrunk or grown since the session started) instead of retesting the
+      // whole category the way a normal Topic Test retest does.
+      if(session.mode === 'revise') startSessionWithIds('revise', '__all__', '__all__', dueRevisionSet().map(q=>q.id));
+      else if(session.mode === 'repeat') startSessionWithIds('repeat', '__all__', '__all__', repeatedMistakeSet().map(q=>q.id));
+      else startSession(session.mode, session.category, session.topic);
+    });
+    const wb = $('#wrongFromSessionBtn');
+    if(wb) wb.addEventListener('click', ()=>startSession('wrong', session.category, session.topic));
+    const skb = $('#skippedBtn');
+    if(skb) skb.addEventListener('click', ()=>startSessionWithIds(session.mode, session.category, session.topic, skippedIds));
+    $('#menuBtn').addEventListener('click', backToMenu);
+  }
+
+  // ---------- revise tab: 3-7-21 spaced revision dashboard ----------
+  function renderRevise(){
+    const area = $('#reviseArea');
+    if(!area) return;
+    if(bank.length===0){
+      area.innerHTML = `<div class="card empty">
+        <div class="stamp-seal">NO<br>DATA</div>
+        <p>Your bank is empty.</p>
+      </div>`;
+      return;
+    }
+    const due = dueRevisionSet();
+    const mistakes = repeatedMistakeSet();
+    const stage1 = bank.filter(q=>q.revisionStage===1).length;
+    const stage2 = bank.filter(q=>q.revisionStage===2).length;
+    const stage3 = bank.filter(q=>q.revisionStage===3).length;
+    const completed = bank.filter(q=>q.revisionStage===4).length;
+    const notLearned = bank.filter(q=>(q.revisionStage||0)===0).length;
+
+    area.innerHTML = `
+      <div class="card">
+        <h2>Today's revision</h2>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="num">${due.length}</div><div class="lbl">Due today</div></div>
+          <div class="stat-box"><div class="num">${stage1+stage2+stage3}</div><div class="lbl">In the pipeline</div></div>
+          <div class="stat-box"><div class="num">${completed}</div><div class="lbl">Completed cycle</div></div>
+        </div>
+        <div class="row" style="margin-top:14px;">
+          <button class="primary" id="startReviseBtn" ${due.length===0?'disabled':''}>Start today's revision (${due.length})</button>
+        </div>
+        ${due.length===0 ? '<p class="muted" style="margin-top:10px;">Nothing due right now.</p>' : ''}
+      </div>
+      <div class="card">
+        <h2>By stage</h2>
+        <div class="cat-head"><span class="colname">Stage</span><span class="colnum">Total</span></div>
+        <div class="cat-row3"><span class="colname">Not yet learned</span><span class="colnum">${notLearned}</span></div>
+        <div class="cat-row3"><span class="colname">Day 3</span><span class="colnum">${stage1}</span></div>
+        <div class="cat-row3"><span class="colname">Day 7</span><span class="colnum">${stage2}</span></div>
+        <div class="cat-row3"><span class="colname">Day 21</span><span class="colnum">${stage3}</span></div>
+        <div class="cat-row3"><span class="colname">Completed</span><span class="colnum">${completed}</span></div>
+      </div>
+      <div class="card">
+        <h2>Repeated mistakes</h2>
+        ${mistakes.length===0
+          ? '<p class="muted">No repeated mistakes yet.</p>'
+          : `<p class="muted">${mistakes.length} question${mistakes.length>1?'s':''} wrong 2 or more times.</p>
+             <div class="row" style="margin-top:10px;"><button class="secondary btn-wrong" id="startRepeatBtn">Practice repeated mistakes (${mistakes.length})</button></div>`}
+      </div>`;
+
+    const startBtn = $('#startReviseBtn');
+    if(startBtn) startBtn.addEventListener('click', async ()=>{
+      if(due.length===0) return;
+      await startSessionWithIds('revise', '__all__', '__all__', due.map(q=>q.id));
+      switchTab('practice');
+    });
+    const repeatBtn = $('#startRepeatBtn');
+    if(repeatBtn) repeatBtn.addEventListener('click', async ()=>{
+      await startSessionWithIds('repeat', '__all__', '__all__', mistakes.map(q=>q.id));
+      switchTab('practice');
+    });
+  }
+
+  // ---------- practice tab: active question ----------
+  function renderQuestion(area){
+    setLearnTabLocked(true);
+    setReviseTabLocked(true);
+    const qid = session.ids[session.idx];
+    const q = findQ(qid);
+    const answered = session.answers[qid];
+    const pct = Math.round((session.idx/session.ids.length)*100);
+
+    if(!session.optionOrder) session.optionOrder = {};
+    if(!session.optionOrder[qid]){
+      session.optionOrder[qid] = shuffleArr(['A','B','C','D']);
+      setData('active-session', session);
+    }
+    const displayOrder = session.optionOrder[qid];
+
+    let optionsHtml = '';
+    displayOrder.forEach(letter=>{
+      let cls = 'omr-row';
+      if(answered){
+        cls += ' disabled';
+        if(letter===q.answer) cls += ' correct';
+        else if(letter===answered) cls += ' wrong';
+      } else if(answered===letter){
+        cls += ' selected';
+      }
+      optionsHtml += `<div class="${cls}" data-letter="${letter}">
+        <div class="bubble"><div class="dot"></div></div>
+        <div class="opt-text">${escapeHtml(q.options[letter])}</div>
+      </div>`;
+    });
+
+    let feedback = '';
+    if(answered){
+      const correct = answered === q.answer;
+      feedback = `<div class="feedback ${correct?'correct':'wrong'}">${correct ? 'CORRECT.' : 'INCORRECT — correct answer: '+escapeHtml(q.options[q.answer])+'.'}</div>
+      <div class="row" style="margin-top:12px;"><button class="primary" id="nextBtn">${session.idx+1>=session.ids.length ? 'Finish' : 'Next question'}</button></div>`;
+    }
+
+    const answeredCount = Object.keys(session.answers).length;
+    const skippedCount = Object.keys(session.skipped || {}).length;
+    const progressCount = answeredCount + skippedCount;
+    const threshold = Math.min(STOP_MIN, session.ids.length);
+
+    area.innerHTML = `<div class="card">
+      <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+      <div class="q-meta">Q ${session.idx+1} / ${session.ids.length}</div>
+      <div class="q-text">${escapeHtml(q.question)}</div>
+      <div id="optionsWrap">${optionsHtml}</div>
+      ${feedback}
+      ${!answered ? `<div class="row" style="margin-top:10px;"><button class="secondary" id="skipBtn">Skip question</button><button class="secondary" id="stopBtn">Stop &amp; score now</button></div><div class="field-error" id="stopMsg"></div>` : ''}
+    </div>`;
+
+    if(!answered){
+      $$('.omr-row', area).forEach(row=>{
+        row.addEventListener('click', ()=>submitAnswer(row.dataset.letter));
+      });
+    }
+    const nb = $('#nextBtn', area);
+    if(nb) nb.addEventListener('click', nextQuestion);
+    const skipBtn = $('#skipBtn', area);
+    if(skipBtn) skipBtn.addEventListener('click', skipQuestion);
+    const sb = $('#stopBtn', area);
+    if(sb) sb.addEventListener('click', ()=>{
+      if(session.mode==='topic' && progressCount < threshold){
+        $('#stopMsg').textContent = `Answer or skip at least ${threshold} question${threshold>1?'s':''} before stopping — you're at ${progressCount} so far.`;
+        return;
+      }
+      if(confirm("Stop the test and score what you've answered so far?")) finishSession();
+    });
+  }
+
+  function updateFabVisibility(){
+    const inTest = !!(session && !session.completed);
+    const inBook = !!bookSession;
+    const hide = inTest || inBook;
+    const wrap = $('#fabWrap');
+    if(wrap){
+      wrap.style.display = hide ? 'none' : '';
+      if(hide) closeFabMenu();
+    }
+    const headSub = $('#headSub');
+    if(headSub) headSub.style.visibility = hide ? 'hidden' : '';
+  }
+
+  function renderPractice(){
+    const area = $('#practiceArea');
+    if(bank.length===0){
+      updateFabVisibility();
+      area.innerHTML = `<div class="card empty">
+        <div class="stamp-seal">NO<br>DATA</div>
+        <p>Your bank is empty.</p>
+      </div>`;
+      return;
+    }
+    if(!session){ updateFabVisibility(); renderMenu(area); return; }
+    if(session.completed){ updateFabVisibility(); renderCompleted(area); return; }
+    updateFabVisibility();
+    renderQuestion(area);
+  }
+
+  // ---------- study book: reads the same bank, question + correct answer only ----------
+  function pickBookSet(category, topic, reviewOnly){
+    let pool = bank;
+    if(category && category!=='__all__') pool = pool.filter(q=>q.category===category);
+    if(topic && topic!=='__all__') pool = pool.filter(q=>q.topic===topic);
+    if(reviewOnly) pool = pool.filter(q=>q.flagged);
+    return pool; // natural/added order, so it reads like a book rather than a shuffled quiz
+  }
+
+  function startBookSession(category, topic, reviewOnly){
+    const ids = pickBookSet(category, topic, reviewOnly).map(q=>q.id);
+    const key = bookScopeKey(category, topic, reviewOnly);
+    const savedIdx = bookProgress[key] || 0;
+    const idx = Math.max(0, Math.min(savedIdx, ids.length-1));
+    bookSession = { category, topic, ids, idx, reviewOnly: !!reviewOnly };
+    bookMnemonicEditing = false;
+    bookMnemonicMenuOpen = false;
+    setData('book-session', bookSession);
+    renderLearn();
+  }
+
+  function backToBookMenu(){
+    bookSession = null;
+    bookMnemonicEditing = false;
+    bookMnemonicMenuOpen = false;
+    deleteData('book-session');
+    renderLearn();
+  }
+
+  function bookGoTo(idx){
+    if(!bookSession) return;
+    bookSession.idx = Math.max(0, Math.min(idx, bookSession.ids.length-1));
+    bookMnemonicEditing = false;
+    bookMnemonicMenuOpen = false;
+    setData('book-session', bookSession);
+    const key = bookScopeKey(bookSession.category, bookSession.topic, bookSession.reviewOnly);
+    bookProgress[key] = bookSession.idx;
+    setData('book-progress', bookProgress);
+    renderLearn();
+  }
+  function bookNext(){ bookGoTo(bookSession.idx+1); }
+  function bookPrev(){ bookGoTo(bookSession.idx-1); }
+
+  function renderBookMenu(area){
+    setPracticeTabLocked(false);
+    setReviseTabLocked(false);
+    const catCounts = categoryCounts();
+    const catOptions = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])
+      .map(([c,n])=>`<option value="${escapeHtml(c)}">${escapeHtml(c)} (${n})</option>`).join('');
+
+    area.innerHTML = `
+      <div class="card">
+        <h2>Study Book</h2>
+        <label for="bookCatSelect">Category</label>
+        <select id="bookCatSelect">
+          <option value="__all__">All categories (${bank.length})</option>
+          ${catOptions}
+        </select>
+        <label for="bookTopicSelect">Topic</label>
+        <select id="bookTopicSelect"></select>
+        <label class="book-review-check-row" for="bookReviewOnly">
+          <input type="checkbox" id="bookReviewOnly">
+          <span id="bookReviewOnlyLbl">Learn your marked questions</span>
+        </label>
+        <div class="field-error" id="err-bookStart"></div>
+        <div class="row" style="margin-top:14px;">
+          <button class="primary" id="startBookBtn">Open book</button>
+        </div>
+      </div>`;
+
+    function scopeLabel(cat, top){
+      if(!cat || cat==='__all__') return 'all categories';
+      if(!top || top==='__all__') return cat;
+      return `${cat} \u2192 ${top}`;
+    }
+    function refreshReviewOnlyLabel(){
+      const cat = $('#bookCatSelect').value;
+      const top = $('#bookTopicSelect') ? $('#bookTopicSelect').value : '__all__';
+      const n = flaggedScopeCount(cat, top);
+      const scope = scopeLabel(cat, top);
+      $('#bookReviewOnlyLbl').textContent = `Learn your marked questions in ${scope} (${n})`;
+      $('#bookReviewOnly').disabled = n===0;
+      if(n===0) $('#bookReviewOnly').checked = false;
+    }
+    function refreshBookTopics(){
+      const cat = $('#bookCatSelect').value;
+      const sel = $('#bookTopicSelect');
+      if(cat==='__all__'){
+        sel.innerHTML = `<option value="__all__">All topics</option>`;
+        sel.disabled = true;
+      } else {
+        sel.disabled = false;
+        const topics = getTopics(cat);
+        const opts = topics.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)} (${bank.filter(q=>q.category===cat&&q.topic===t).length})</option>`).join('');
+        sel.innerHTML = `<option value="__all__">All topics in ${escapeHtml(cat)} (${catCounts[cat]||0})</option>` + opts;
+      }
+      refreshReviewOnlyLabel();
+    }
+    refreshBookTopics();
+    $('#bookCatSelect').addEventListener('change', refreshBookTopics);
+    $('#bookTopicSelect').addEventListener('change', refreshReviewOnlyLabel);
+    $('#startBookBtn').addEventListener('click', ()=>{
+      const cat = $('#bookCatSelect').value;
+      const top = $('#bookTopicSelect').value;
+      const reviewOnly = $('#bookReviewOnly').checked;
+      if(reviewOnly){
+        if(flaggedScopeCount(cat, top) === 0){
+          setErr('bookStart', `You haven't marked any questions in ${scopeLabel(cat, top)} yet.`);
+          return;
+        }
+      } else if(scopeCount(cat, top) === 0){
+        setErr('bookStart', 'There are no questions in that scope yet.');
+        return;
+      }
+      setErr('bookStart','');
+      startBookSession(cat, top, reviewOnly);
+    });
+  }
+
+  function renderBookPage(area){
+    setPracticeTabLocked(true);
+    setReviseTabLocked(true);
+    const total = bookSession.ids.length;
+    const idx = bookSession.idx;
+    const qid = bookSession.ids[idx];
+    const q = findQ(qid);
+    if(!q){ backToBookMenu(); return; }
+    const pageOptions = bookSession.ids.map((id,i)=>{
+      const pq = findQ(id);
+      const mark = (pq && pq.flagged) ? '\u2605 ' : '';
+      return `<option value="${i}" ${i===idx?'selected':''}>${mark}Page ${i+1}</option>`;
+    }).join('');
+    const hasMnemonic = !!(q.mnemonic && q.mnemonic.trim().length>0);
+    const unlearnedInBook = bookSession.ids.reduce((n,id)=>{
+      const bq = findQ(id);
+      return n + ((bq && (bq.revisionStage||0)===0) ? 1 : 0);
+    }, 0);
+    const revStage = q.revisionStage || 0;
+    const learnBtnLabel = revStage===0 ? 'Mark Learned' : 'Learned';
+    const revStatusLine = revStage===0 ? ''
+      : revStage===4 ? `<p class="muted" style="margin-top:10px;"><span class="rev-badge stage4">Revision complete</span></p>`
+      : `<p class="muted" style="margin-top:10px;">
+           <span class="rev-badge stage${revStage} ${q.nextRevisionDate && q.nextRevisionDate<=todayStr() ? 'due' : ''}">${revisionStageLabel(revStage)}${q.nextRevisionDate ? ' · due ' + q.nextRevisionDate : ''}</span>
+           ${(q.revisionWrongCount||0)>=2 ? ` <span class="rev-badge mistake">Repeated mistake (${q.revisionWrongCount}x)</span>` : ''}
+         </p>`;
+
+    const mnemonicBlock = bookMnemonicEditing
+      ? `<div class="book-mnemonic-edit">
+          <div class="book-answer-label">Mnemonic</div>
+          <textarea id="mnemonicInput" class="book-mnemonic-textarea" placeholder="Type a memory trick to help you recall this...">${escapeHtml(q.mnemonic||'')}</textarea>
+          <div class="row" style="margin-top:8px; gap:8px;">
+            <button class="primary" id="mnemonicSaveBtn">Save</button>
+            <button class="secondary" id="mnemonicCancelBtn">Cancel</button>
+          </div>
+        </div>`
+      : (hasMnemonic
+        ? `<div class="book-mnemonic-box">
+            <div class="book-mnemonic-head">
+              <span class="book-answer-label" style="margin-bottom:0;">Mnemonic</span>
+              <div class="book-mnemonic-menu-wrap">
+                <button class="book-mnemonic-dots" id="mnemonicDotsBtn" title="Options">&#8942;</button>
+                ${bookMnemonicMenuOpen ? `<div class="book-mnemonic-menu">
+                  <button id="mnemonicEditBtn" title="Edit">&#9998;</button>
+                  <button id="mnemonicDeleteBtn" class="mnemonic-delete-icon" title="Delete">&#128465;</button>
+                </div>` : ''}
+              </div>
+            </div>
+            <div class="book-mnemonic-text">${escapeHtml(q.mnemonic)}</div>
+          </div>`
+        : '');
+
+    area.innerHTML = `
+      <div class="book-shell">
+        <div class="book-topbar">
+          <span class="book-scope">${escapeHtml(scopeLabel(bookSession.category, bookSession.topic))}</span>
+          <div class="book-topbar-actions">
+            <button class="learn-btn ${revStage>0?'on':''}" id="learnBtn">${learnBtnLabel}</button>
+            <button class="book-flag-btn ${q.flagged?'flagged':''}" id="flagBtn">${q.flagged?'\u2605':'\u2606'}</button>
+            <select id="bookJump" class="book-jump">${pageOptions}</select>
+          </div>
+        </div>
+        <div class="book-page-wrap">
+          <div class="book-page-card">
+            <div class="book-qnum">Q${idx+1}</div>
+            <div class="book-question">${escapeHtml(q.question)}</div>
+            <div class="book-rule"></div>
+            <div class="book-answer-wrap"><span class="book-answer">${escapeHtml(q.options[q.answer])}</span></div>
+            ${mnemonicBlock}
+          </div>
+          ${revStatusLine}
+          ${(!hasMnemonic && !bookMnemonicEditing) ? `<button class="book-mnemonic-fab" id="mnemonicAddBtn">&#9998;</button>` : ''}
+        </div>
+        <div class="book-nav">
+          <button class="secondary" id="bookPrevBtn" ${idx===0?'disabled':''}>&larr; Prev</button>
+          <span class="book-pagenum">Page ${idx+1} of ${total}</span>
+          <button class="secondary" id="bookNextBtn" ${idx>=total-1?'disabled':''}>Next &rarr;</button>
+        </div>
+        ${unlearnedInBook>0 ? `<div class="row" style="margin-top:10px; justify-content:center; gap:6px; align-items:center; flex-wrap:wrap;">
+          <span class="muted" style="font-family:'Courier New',monospace; font-size:0.72rem;">From page</span>
+          <input type="number" id="bookRangeFrom" min="1" max="${total}" value="1" style="width:56px; padding:6px; font-family:'Courier New',monospace; border:1px solid var(--ink); border-radius:var(--radius);">
+          <span class="muted" style="font-family:'Courier New',monospace; font-size:0.72rem;">to</span>
+          <input type="number" id="bookRangeTo" min="1" max="${total}" value="${total}" style="width:56px; padding:6px; font-family:'Courier New',monospace; border:1px solid var(--ink); border-radius:var(--radius);">
+          <button class="secondary" id="bookMarkRangeBtn">Mark as learned</button>
+        </div>
+        <div class="field-error" id="err-bookRange" style="text-align:center;"></div>` : ''}
+        <div class="row" style="margin-top:12px; justify-content:center;">
+          <button class="secondary btn-menu" id="bookMenuBtn">Close book</button>
+        </div>
+      </div>`;
+
+    $('#bookPrevBtn').addEventListener('click', bookPrev);
+    $('#bookNextBtn').addEventListener('click', bookNext);
+    $('#bookJump').addEventListener('change', (e)=> bookGoTo(parseInt(e.target.value,10)));
+    $('#bookMenuBtn').addEventListener('click', backToBookMenu);
+    $('#flagBtn').addEventListener('click', async ()=>{
+      await updateQuestionInBank(q.id, { flagged: !q.flagged });
+      renderBookPage(area);
+    });
+    $('#learnBtn').addEventListener('click', async ()=>{
+      const turningOn = (q.revisionStage||0) === 0;
+      markLearned(q, turningOn);
+      await saveChunkFor(q);
+      if(turningOn) bookNext();
+      else renderBookPage(area);
+    });
+    const markRangeBtn = $('#bookMarkRangeBtn');
+    if(markRangeBtn) markRangeBtn.addEventListener('click', async ()=>{
+      const errEl = $('#err-bookRange');
+      if(errEl) errEl.textContent = '';
+      const fromEl = $('#bookRangeFrom');
+      const toEl = $('#bookRangeTo');
+      let from = parseInt(fromEl.value, 10);
+      let to = parseInt(toEl.value, 10);
+      if(isNaN(from) || isNaN(to) || from<1 || to<1 || from>total || to>total){
+        if(errEl) errEl.textContent = `Enter page numbers between 1 and ${total}.`;
+        return;
+      }
+      if(from>to){ const t=from; from=to; to=t; }
+      const rangeIds = bookSession.ids.slice(from-1, to);
+      const targets = rangeIds.map(id=>findQ(id)).filter(bq=>bq && (bq.revisionStage||0)===0);
+      if(targets.length===0){
+        if(errEl) errEl.textContent = `No unlearned questions between page ${from} and ${to}.`;
+        return;
+      }
+      if(!confirm(`Mark ${targets.length} unlearned question${targets.length>1?'s':''} from page ${from} to ${to} as learned?`)) return;
+      targets.forEach(bq=>markLearned(bq, true));
+      try{ await idbPutMany('questions', targets); }
+      catch(e){ storageOK = false; console.error('storage write failed', e); }
+      renderBookPage(area);
+    });
+
+    const addBtn = $('#mnemonicAddBtn');
+    if(addBtn) addBtn.addEventListener('click', ()=>{
+      bookMnemonicEditing = true; bookMnemonicMenuOpen = false; renderBookPage(area);
+    });
+    const saveBtn = $('#mnemonicSaveBtn');
+    if(saveBtn) saveBtn.addEventListener('click', async ()=>{
+      const val = $('#mnemonicInput').value.trim();
+      await updateQuestionInBank(q.id, { mnemonic: val });
+      bookMnemonicEditing = false;
+      renderBookPage(area);
+    });
+    const cancelBtn = $('#mnemonicCancelBtn');
+    if(cancelBtn) cancelBtn.addEventListener('click', ()=>{
+      bookMnemonicEditing = false; renderBookPage(area);
+    });
+    const dotsBtn = $('#mnemonicDotsBtn');
+    if(dotsBtn) dotsBtn.addEventListener('click', (e)=>{
+      e.stopPropagation(); bookMnemonicMenuOpen = !bookMnemonicMenuOpen; renderBookPage(area);
+    });
+    const editBtn = $('#mnemonicEditBtn');
+    if(editBtn) editBtn.addEventListener('click', ()=>{
+      bookMnemonicEditing = true; bookMnemonicMenuOpen = false; renderBookPage(area);
+    });
+    const deleteBtn = $('#mnemonicDeleteBtn');
+    if(deleteBtn) deleteBtn.addEventListener('click', async ()=>{
+      if(!confirm('Delete this mnemonic?')) return;
+      await updateQuestionInBank(q.id, { mnemonic: '' });
+      bookMnemonicMenuOpen = false;
+      renderBookPage(area);
+    });
+  }
+
+  function renderLearn(){
+    const area = $('#learnArea');
+    if(!area) return;
+    if(bank.length===0){
+      updateFabVisibility();
+      area.innerHTML = `<div class="card empty">
+        <div class="stamp-seal">NO<br>DATA</div>
+        <p>Your bank is empty</p>
+      </div>`;
+      return;
+    }
+    if(!bookSession){ updateFabVisibility(); renderBookMenu(area); return; }
+    updateFabVisibility();
+    renderBookPage(area);
+  }
+
+  // Called specifically when the user clicks the "Study Book" tab. Unlike renderLearn()
+  // (which internal book navigation — next/prev/mnemonic edits/etc — uses to redraw
+  // whatever page is currently open), this always shows the topic picker first, even if
+  // a session was left open from a previous topic. Whichever topic they pick then resumes
+  // automatically at that topic's own last-read page (see bookProgress / startBookSession).
+  function openLearnTab(){
+    const area = $('#learnArea');
+    if(!area) return;
+    if(bank.length===0){ renderLearn(); return; }
+    updateFabVisibility();
+    renderBookMenu(area);
+  }
+
+  // ---------- manage tab: search, edit, delete, bulk edit ----------
+  function manageFilteredBank(){
+    const term = ($('#manageSearch') ? $('#manageSearch').value : '').trim().toLowerCase();
+    const catFilter = $('#manageCatFilter') ? $('#manageCatFilter').value : '__none__';
+    const topicFilter = $('#manageTopicFilter') ? $('#manageTopicFilter').value : '__all__';
+    if(catFilter === '__none__' && !term) return null; // nothing chosen yet — don't dump the whole bank
+    let pool = bank.slice();
+    if(catFilter !== '__all__' && catFilter !== '__none__') pool = pool.filter(q=>q.category===catFilter);
+    if(topicFilter !== '__all__') pool = pool.filter(q=>q.topic===topicFilter);
+    if(term){
+      pool = pool.filter(q=>{
+        const hay = [q.question, q.options.A, q.options.B, q.options.C, q.options.D, q.category, q.topic]
+          .filter(Boolean).join(' ').toLowerCase();
+        return hay.includes(term);
+      });
+    }
+    return pool;
+  }
+
+  function renderManageItem(q){
+    const revBit = (q.revisionStage||0) > 0
+      ? ` &nbsp;&middot;&nbsp; <span class="rev-badge stage${q.revisionStage}">${revisionStageLabel(q.revisionStage)}</span>`
+      : '';
+    const mistakeBit = (q.revisionWrongCount||0) >= 2
+      ? ` <span class="rev-badge mistake">Repeated mistake (${q.revisionWrongCount}x)</span>`
+      : '';
+    return `<div class="card manage-item" data-qid="${q.id}">
+      <div class="q-meta">${escapeHtml(q.category)} &rarr; ${escapeHtml(q.topic)} &nbsp;&middot;&nbsp; Correct: ${q.answer} &nbsp;&middot;&nbsp; Seen ${q.seenCount||0}&times;${revBit}${mistakeBit}</div>
+      <div class="q-text-preview">${escapeHtml(q.question)}</div>
+      <div class="row">
+        <button class="secondary editBtn">Edit</button>
+        <button class="secondary danger deleteBtn">Delete</button>
+      </div>
+      <div class="editForm">
+        <label>Category</label>
+        <input type="text" class="editCategory" list="dlCategories" value="${escapeHtml(q.category)}">
+        <label>Topic</label>
+        <input type="text" class="editTopic" list="dlTopics" value="${escapeHtml(q.topic)}">
+        <label>Question</label>
+        <textarea class="editQuestion" style="min-height:70px;">${escapeHtml(q.question)}</textarea>
+        <label>Options</label>
+        <input type="text" class="editOptA" value="${escapeHtml(q.options.A||'')}" placeholder="A) ...">
+        <input type="text" class="editOptB" value="${escapeHtml(q.options.B||'')}" placeholder="B) ..." style="margin-top:6px;">
+        <input type="text" class="editOptC" value="${escapeHtml(q.options.C||'')}" placeholder="C) ..." style="margin-top:6px;">
+        <input type="text" class="editOptD" value="${escapeHtml(q.options.D||'')}" placeholder="D) ..." style="margin-top:6px;">
+        <label>Correct answer</label>
+        <select class="editAnswer">
+          ${['A','B','C','D'].map(l=>`<option value="${l}" ${q.answer===l?'selected':''}>${l}</option>`).join('')}
+        </select>
+        <div class="field-error editErr"></div>
+        <div class="row" style="margin-top:10px;">
+          <button class="primary saveEditBtn">Save changes</button>
+          <button class="secondary cancelEditBtn">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderManageList(){
+    const listEl = $('#manageList');
+    if(!listEl) return;
+    const pool = manageFilteredBank();
+    const countEl = $('#manageCount');
+    if(pool === null){
+      if(countEl) countEl.textContent = '';
+      listEl.innerHTML = `<div class="card empty"><p class="muted">Choose a category above (or search) to browse your questions.</p></div>`;
+      return;
+    }
+    if(countEl){
+      countEl.textContent = `${pool.length} question${pool.length===1?'':'s'} shown` +
+        (pool.length!==bank.length ? ` (of ${bank.length} total)` : '');
+    }
+    listEl.innerHTML = pool.length
+      ? pool.map(renderManageItem).join('')
+      : `<div class="card empty"><p class="muted">No questions match your search or filters.</p></div>`;
+  }
+
+  function populateManageFilters(prevCat, prevTopic){
+    const cats = getCategories();
+    const sel = $('#manageCatFilter');
+    sel.innerHTML = `<option value="__none__">Choose category&hellip;</option>` +
+      `<option value="__all__">All categories (${bank.length})</option>` +
+      cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)} (${bank.filter(q=>q.category===c).length})</option>`).join('');
+    sel.value = (prevCat && (prevCat==='__all__' || cats.includes(prevCat))) ? prevCat : '__none__';
+    refreshManageTopicFilter(prevTopic);
+  }
+  function refreshManageTopicFilter(prevTopic){
+    const cat = $('#manageCatFilter').value;
+    const sel = $('#manageTopicFilter');
+    if(cat==='__all__' || cat==='__none__'){
+      sel.innerHTML = `<option value="__all__">All topics</option>`;
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    const topics = getTopics(cat);
+    sel.innerHTML = `<option value="__all__">All topics in ${escapeHtml(cat)}</option>` +
+      topics.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)} (${bank.filter(q=>q.category===cat&&q.topic===t).length})</option>`).join('');
+    if(prevTopic && topics.includes(prevTopic)) sel.value = prevTopic;
+  }
+
+  function attachManageListeners(){
+    const list = $('#manageList');
+    if(!list) return;
+    list.addEventListener('click', async (e)=>{
+      const item = e.target.closest('.manage-item');
+      if(!item) return;
+      const id = item.dataset.qid;
+
+      if(e.target.closest('.editBtn')){
+        const form = item.querySelector('.editForm');
+        form.style.display = (form.style.display==='block') ? 'none' : 'block';
+        return;
+      }
+      if(e.target.closest('.cancelEditBtn')){
+        item.querySelector('.editForm').style.display = 'none';
+        return;
+      }
+      if(e.target.closest('.deleteBtn')){
+        const q = findQ(id);
+        if(!q) return;
+        if(!confirm('Delete this question permanently? This cannot be undone.\n\n' + q.question.slice(0,140))) return;
+        await deleteQuestionFromBank(id);
+        updateHeadSub();
+        renderManageList();
+        return;
+      }
+      if(e.target.closest('.saveEditBtn')){
+        const category = item.querySelector('.editCategory').value.trim();
+        const topic = item.querySelector('.editTopic').value.trim();
+        const question = item.querySelector('.editQuestion').value.trim();
+        const a = item.querySelector('.editOptA').value.trim();
+        const b = item.querySelector('.editOptB').value.trim();
+        const c = item.querySelector('.editOptC').value.trim();
+        const d = item.querySelector('.editOptD').value.trim();
+        const answer = item.querySelector('.editAnswer').value;
+        const errEl = item.querySelector('.editErr');
+        if(!category || !topic || !question || !a || !b || !c || !d){
+          errEl.textContent = 'All fields are required.';
+          return;
+        }
+        errEl.textContent = '';
+        await updateQuestionInBank(id, { category, topic, question, options:{A:a,B:b,C:c,D:d}, answer });
+        updateHeadSub();
+        renderManage();
+      }
+    });
+  }
+
+  function renderManage(){
+    const area = $('#manageArea');
+    if(bank.length===0){
+      area.innerHTML = `<div class="card empty">
+        <div class="stamp-seal">NO<br>DATA</div>
+        <p>Your bank is empty.</p>
+      </div>`;
+      return;
+    }
+
+    const prevSearch = $('#manageSearch') ? $('#manageSearch').value : '';
+    const prevCat = $('#manageCatFilter') ? $('#manageCatFilter').value : '__none__';
+    const prevTopic = $('#manageTopicFilter') ? $('#manageTopicFilter').value : '__all__';
+    const allTopics = Array.from(new Set(bank.map(q=>q.topic))).sort();
+    const allCats = getCategories();
+
+    area.innerHTML = `
+      <div class="card">
+        <h2>Search &amp; browse</h2>
+        <label for="manageSearch">Search</label>
+        <input type="text" id="manageSearch" placeholder="Search question text, options, category, or topic..." value="${escapeHtml(prevSearch)}">
+        <div class="col2" style="margin-top:10px;">
+          <div>
+            <label for="manageCatFilter">Category</label>
+            <select id="manageCatFilter"></select>
+          </div>
+          <div>
+            <label for="manageTopicFilter">Topic</label>
+            <select id="manageTopicFilter"></select>
+          </div>
+        </div>
+        <p class="muted" id="manageCount" style="margin-top:10px;"></p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+          <button type="button" id="exportScopeBtn" class="secondary" style="display:none;">Export this topic</button>
+          <button type="button" id="deleteScopeBtn" class="secondary danger" style="display:none;">Delete this topic</button>
+        </div>
+      </div>
+      <div id="manageList"></div>
+      <datalist id="dlCategories">${allCats.map(c=>`<option value="${escapeHtml(c)}">`).join('')}</datalist>
+      <datalist id="dlTopics">${allTopics.map(t=>`<option value="${escapeHtml(t)}">`).join('')}</datalist>
+    `;
+
+    populateManageFilters(prevCat, prevTopic);
+    renderManageList();
+    attachManageListeners();
+
+    $('#manageSearch').addEventListener('input', renderManageList);
+    $('#manageCatFilter').addEventListener('change', ()=>{ refreshManageTopicFilter(); renderManageList(); updateDeleteScopeBtn(); updateExportScopeBtn(); });
+    $('#manageTopicFilter').addEventListener('change', ()=>{ renderManageList(); updateDeleteScopeBtn(); updateExportScopeBtn(); });
+    $('#deleteScopeBtn').addEventListener('click', handleDeleteScopeClick);
+    $('#exportScopeBtn').addEventListener('click', handleExportScopeClick);
+    updateDeleteScopeBtn();
+    updateExportScopeBtn();
+  }
+
+  // Shows/labels the "Export this topic / category" button based on the current filter selection.
+  function updateExportScopeBtn(){
+    const btn = $('#exportScopeBtn');
+    if(!btn) return;
+    const cat = $('#manageCatFilter') ? $('#manageCatFilter').value : '__none__';
+    const topic = $('#manageTopicFilter') ? $('#manageTopicFilter').value : '__all__';
+    if(cat==='__none__' || cat==='__all__'){
+      btn.style.display = 'none';
+      return;
+    }
+    if(topic==='__all__'){
+      const n = bank.filter(q=>q.category===cat).length;
+      btn.textContent = `Export category "${cat}" (${n} question${n===1?'':'s'})`;
+    } else {
+      const n = bank.filter(q=>q.category===cat && q.topic===topic).length;
+      btn.textContent = `Export topic "${topic}" (${n} question${n===1?'':'s'})`;
+    }
+    btn.style.display = 'inline-block';
+  }
+
+  function handleExportScopeClick(){
+    const cat = $('#manageCatFilter').value;
+    const topicSel = $('#manageTopicFilter').value;
+    if(cat==='__none__' || cat==='__all__') return;
+    const topic = (topicSel==='__all__') ? null : topicSel;
+    exportScope(cat, topic);
+  }
+
+  // Shows/labels the "Delete this topic / category" button based on the current filter selection.
+  function updateDeleteScopeBtn(){
+    const btn = $('#deleteScopeBtn');
+    if(!btn) return;
+    const cat = $('#manageCatFilter') ? $('#manageCatFilter').value : '__none__';
+    const topic = $('#manageTopicFilter') ? $('#manageTopicFilter').value : '__all__';
+    if(cat==='__none__' || cat==='__all__'){
+      btn.style.display = 'none';
+      return;
+    }
+    if(topic==='__all__'){
+      const n = bank.filter(q=>q.category===cat).length;
+      btn.textContent = `Delete entire category "${cat}" (${n} question${n===1?'':'s'})`;
+    } else {
+      const n = bank.filter(q=>q.category===cat && q.topic===topic).length;
+      btn.textContent = `Delete topic "${topic}" (${n} question${n===1?'':'s'})`;
+    }
+    btn.style.display = 'inline-block';
+  }
+
+  async function handleDeleteScopeClick(){
+    const cat = $('#manageCatFilter').value;
+    const topicSel = $('#manageTopicFilter').value;
+    if(cat==='__none__' || cat==='__all__') return;
+    const topic = (topicSel==='__all__') ? null : topicSel;
+    const scopeLabelTxt = topic===null ? `the entire category "${cat}"` : `the topic "${topic}" (in "${cat}")`;
+    const count = bank.filter(q=>q.category===cat && (topic===null || q.topic===topic)).length;
+    if(!confirm(`Delete ${scopeLabelTxt}? This will permanently remove ${count} question${count===1?'':'s'} and cannot be undone.`)) return;
+    await deleteScopeFromBank(cat, topic);
+    updateHeadSub();
+    renderManage();
+  }
+
+  // ---------- stats / register ----------
+  function renderStats(){
+    const area = $('#statsArea');
+    const wrongCount = bank.filter(q=>q.lastResult==='incorrect').length;
+    const flaggedCount = bank.filter(q=>q.flagged).length;
+    const lastSession = stats.history.length ? stats.history[stats.history.length-1] : null;
+    const lastAcc = lastSession && lastSession.attempted ? Math.round((lastSession.correct/lastSession.attempted)*100) : null;
+
+    const categories = getCategories();
+    const catHeader = `<div class="cat-head"><span class="colname">Category / Topic</span><span class="colnum">Total</span><span class="colnum">To improve</span></div>`;
+    const catRows = categories.map(cat=>{
+      const catTotal = bank.filter(q=>q.category===cat).length;
+      const catWrong = bank.filter(q=>q.category===cat && q.lastResult==='incorrect').length;
+      const topics = getTopics(cat);
+      const topicRows = topics.map(t=>{
+        const n = bank.filter(q=>q.category===cat && q.topic===t).length;
+        const w = bank.filter(q=>q.category===cat && q.topic===t && q.lastResult==='incorrect').length;
+        return `<div class="cat-row3" style="padding-left:18px;"><span class="colname">↳ ${escapeHtml(t)}</span><span class="colnum">${n}</span><span class="colnum improve">${w || '—'}</span></div>`;
+      }).join('');
+      return `<div class="cat-row3" style="font-weight:700;"><span class="colname">${escapeHtml(cat)}</span><span class="colnum">${catTotal}</span><span class="colnum improve">${catWrong || '—'}</span></div>${topicRows}`;
+    }).join('');
+
+    const histHeader = `<div class="hist-head"><span class="col-date">Date</span><span class="col-mode">Mode</span><span class="col-scope">Scope</span><span class="col-score">Score</span></div>`;
+    const hist = stats.history.slice(-10).reverse().map(h=>{
+      const label = scopeLabel(h.category, h.topic);
+      const modeLbl = sessionModeLabel(h.mode);
+      const acc = h.attempted ? Math.round((h.correct/h.attempted)*100) : 0;
+      return `<div class="hist-row"><span class="col-date">${h.date}</span><span class="col-mode">${escapeHtml(modeLbl)}</span><span class="col-scope">${escapeHtml(label)}</span><span class="col-score"><span class="pct">${acc}%</span> <span class="frac">(${h.correct}/${h.attempted})</span></span></div>`;
+    }).join('');
+
+    area.innerHTML = `
+      <div class="card">
+        <h2>Register</h2>
+        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);">
+          <div class="stat-box"><div class="num">${coveredCount()}/${bank.length}</div><div class="lbl">Covered / Total questions</div></div>
+          <div class="stat-box"><div class="num">${wrongCount}</div><div class="lbl">To review (wrong)</div></div>
+          <div class="stat-box"><div class="num">${flaggedCount}</div><div class="lbl">Marked for review</div></div>
+          <div class="stat-box"><div class="num">${lastAcc===null?'—':lastAcc+'%'}</div><div class="lbl">Last session accuracy</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>By category &amp; topic</h2>
+        ${catRows ? catHeader + catRows : '<p class="muted">No questions yet.</p>'}
+      </div>
+      <div class="card">
+        <h2>Recent sessions</h2>
+        ${hist ? histHeader + hist : '<p class="muted">No sessions completed yet.</p>'}
+      </div>
+    `;
+  }
+
+  // ---------- revision-due reminder popup ----------
+  // Shown every time the app is opened (not just once), whenever something is
+  // due for today's spaced revision, so it can't be missed. Purely a reminder —
+  // closing it doesn't change any data, and it will pop up again next time the
+  // app is opened if there's still something due.
+  function showRevisionToast(count){
+    const el = $('#revisionToast');
+    if(!el || count<=0) return;
+    $('#revisionToastMsg').textContent =
+      `You have ${count} question${count>1?'s':''} ready for today's spaced revision.`;
+    el.style.display = 'flex';
+  }
+  function hideRevisionToast(){
+    const el = $('#revisionToast');
+    if(el) el.style.display = 'none';
+  }
+  $('#revisionToastClose').addEventListener('click', hideRevisionToast);
+  $('#revisionToastGo').addEventListener('click', ()=>{
+    hideRevisionToast();
+    switchTab('revise');
+  });
+
+  // ---------- init ----------
+  async function init(){
+    await loadBank();
+    stats = await getData('stats', { history: [] });
+    if(!Array.isArray(stats.history)) stats.history = [];
+    session = await getData('active-session', null);
+    if(session && !session.skipped) session.skipped = {};
+    if(session && !session.optionOrder) session.optionOrder = {};
+    bookSession = await getData('book-session', null);
+    if(bookSession && (!Array.isArray(bookSession.ids) || !bookSession.ids.length)) bookSession = null;
+    bookProgress = await getData('book-progress', {});
+    if(!bookProgress || typeof bookProgress !== 'object') bookProgress = {};
+    if(!storageOK){
+      const banner = document.createElement('div');
+      banner.className = 'card';
+      banner.style.borderColor = 'var(--stamp)';
+      banner.innerHTML = `<h2 style="color:var(--stamp);">Cloud sync unavailable</h2>
+        <p class="muted">Couldn't reach the server. Nothing will save right now.</p>`;
+      document.querySelector('.wrap').insertBefore(banner, document.querySelector('nav.tabs'));
+    }
+    updateHeadSub();
+    renderPractice();
+
+    const due = dueRevisionSet();
+    if(due.length>0) showRevisionToast(due.length);
+  }
+
+  // ---------- auth ----------
+  let authMode = 'signin'; // 'signin' | 'signup'
+  const isWebPage = location.protocol==='http:' || location.protocol==='https:';
+  if(!isWebPage){
+    setTimeout(()=>setAuthErr('This file is opened locally, so sign-in will not work. Open the app from its https:// link instead.'),0);
+  }
+  function setAuthErr(msg){ $('#authErr').textContent = msg || ''; }
+
+  $('#authToggleBtn').addEventListener('click', ()=>{
+    authMode = authMode==='signin' ? 'signup' : 'signin';
+    $('#authTitle').textContent = authMode==='signin' ? 'Sign in' : 'Create account';
+    $('#authSubmitBtn').textContent = authMode==='signin' ? 'Sign in' : 'Sign up';
+    $('#authToggleBtn').textContent = authMode==='signin' ? 'Need an account? Sign up' : 'Have an account? Sign in';
+    setAuthErr('');
+  });
+
+  $('#authSubmitBtn').addEventListener('click', async ()=>{
+    const email = $('#authEmail').value.trim();
+    const password = $('#authPassword').value;
+    if(!email || !password){ setAuthErr('Enter both email and password.'); return; }
+    $('#authSubmitBtn').disabled = true;
+    $('#authStatus').textContent = 'Working…';
+    setAuthErr('');
+    try{
+      const attempt = authMode==='signin'
+        ? signInWithEmailAndPassword(auth, email, password)
+        : createUserWithEmailAndPassword(auth, email, password);
+      await Promise.race([attempt, new Promise((_,rej)=>setTimeout(()=>rej(new Error('__timeout__')),15000))]);
+    }catch(e){
+      if(e && e.message==='__timeout__'){
+        setAuthErr(isWebPage
+          ? 'No response from the server. Check your internet connection and try again.'
+          : 'Sign-in cannot work when this file is opened locally. Open the app from its https:// link instead.');
+      } else {
+        setAuthErr((e && e.message) || 'Authentication failed.');
+      }
+      $('#authStatus').textContent = '';
+    }finally{
+      $('#authSubmitBtn').disabled = false;
+    }
+  });
+
+  $('#signOutBtn').addEventListener('click', async ()=>{
+    if(!confirm('Sign out?')) return;
+    await signOut(auth);
+    location.reload();
+  });
+
+  // ---------- theme ----------
+  function applyTheme(mode){
+    document.body.classList.toggle('dark-mode', mode==='dark');
+    $('#themeToggle').textContent = mode==='dark' ? '☀️' : '🌙';
+  }
+  const savedTheme = localStorage.getItem('answerSheetTheme') ||
+    (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyTheme(savedTheme);
+  $('#themeToggle').addEventListener('click', ()=>{
+    const next = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+    localStorage.setItem('answerSheetTheme', next);
+    applyTheme(next);
+  });
+
+  let appBooted = false;
+  onAuthStateChanged(auth, async (user)=>{
+    if(user){
+      currentUid = user.uid;
+      $('#authOverlay').classList.remove('open');
+      $('#authStatus').textContent = '';
+      $('#accountEmail').textContent = 'Signed in as ' + (user.email || user.uid);
+      if(!appBooted){
+        appBooted = true;
+        await init();
+      }
+    } else {
+      currentUid = null;
+      $('#authOverlay').classList.add('open');
+    }
+  });
+})();
+</script>
+</body>
+</html>
